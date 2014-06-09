@@ -166,6 +166,7 @@ var Order = new mongoose.Schema({
     side: String,
     price: Number,
     strike_price: Number,
+    quantity_original: Number,
     quantity: Number,
     quantity_left: Number,
     initial_margin: Number,
@@ -179,7 +180,8 @@ var Order = new mongoose.Schema({
     pending: String,
     net_variation:  { type: Number, default: 0},
     buyer:  { type: mongoose.Schema.ObjectId, ref: 'User' },
-    seller: { type: mongoose.Schema.ObjectId, ref: 'User' }
+    seller: { type: mongoose.Schema.ObjectId, ref: 'User' },
+    opposing_orders: [{ type: mongoose.Schema.ObjectId, ref: 'Order' }]
 });
 
 var OrderData = new mongoose.Schema({
@@ -684,6 +686,7 @@ order = new Order({
                 side: 'bid',
                 price: price,
                 quantity: quantity,
+                quantity_original: quantity,
                 quantity_left: quantity,
                 initial_margin: maintenance_margin,
                 buyer: user, 
@@ -755,6 +758,9 @@ maintenance_margin_multiplier = .4;
 (function(ask_value, ask_order_id, ask_price, ask_quantity_left, key, purchase_cost, partial_maintenance_margin, ask_maintenance_margin, maintenance_margin_multiplier){
 if (!complete ){
     if (ask_quantity_left >= bid_quantity_left){
+        console.log('figure 1 ' + ask_quantity_left); 
+        console.log('figure 1 ' + bid_quantity_left);
+
         quantity_left = ask_quantity_left - bid_quantity_left;
         //update sell order
 
@@ -771,20 +777,20 @@ if (!complete ){
         User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function(err, user){
 
         //buy_quantity_left = buy_value_left / buy_price;
-
-
         //update buyer balance
-
 
         console.log('buy quantity left ' + key + ' ' + bid_quantity_left);
         console.log('purchase cost ' + key + ' ' + ask_value);
         fee_total = fees * bid_quantity;
 
+        //User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
         user[short_symbol].update({$inc: {balance: bid_quantity_left}}, { w: 1 }, callback);
         user.update({$inc: {in_positions: partial_maintenance_margin, maintenance_margin: maintenance_margin, balance: -1 * (purchase_cost + fee_total) , available_balance: -1 * ( purchase_cost + fee_total)}}, { w: 1 }, callback);
 
+
         function callback(){}
         //done updating buyer balance
+        User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
 
         time = new Date().getTime();
         order = new Order({
@@ -793,12 +799,24 @@ if (!complete ){
                         short_symbol: short_symbol,
                         side: 'bid',
                         price: bid_price,
+                        quantity_original: bid_quantity,
                         quantity: bid_quantity,
                         quantity_left: 0,
+                        seller: seller,
                         buyer: user,
                         pending: 'complete',
                         initial_margin: maintenance_margin
         });
+
+
+        console.log('point 1  ' + key + ' ' + val);
+
+        $.each(ask, function(keyb, valb){
+        if (keyb <= key)
+        order.opposing_orders.push(valb);
+        });
+
+        console.log('test 1 ' + order);
         order.btc_prices.push(current_price);
 
         order_data = new OrderData({
@@ -826,12 +844,12 @@ if (!complete ){
 
         });
 
-        });
+
 
         //update balance on seller
 
         //console.log('sell order user ' + sell_order);
-        User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
+
             //console.log('dasell ' + seller);
             console.log('buy quantity left ' + bid_quantity_left);
             console.log('buy value left ' + bid_value_left);
@@ -850,7 +868,7 @@ if (!complete ){
 
             });
 
-
+                    });
 
         });
 
@@ -858,6 +876,8 @@ if (!complete ){
         complete = true;
     }
     else{
+        console.log('figure 2 ' + ask_quantity_left); 
+        console.log('figure 2 ' + bid_quantity_left);
         //if sell quantity is less than the buy quantity
         console.log('shit is in elseb');
 
@@ -867,9 +887,11 @@ if (!complete ){
 
         Order.findByIdAndUpdate(ask_order_id, {$set: {quantity_left: 0, pending: 'complete', last_trade_time: new Date().getTime()}}, function(err, order){
 
+
         });
 
         //create buy order record and update balance
+        User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
         User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function(err, user){
 
         function callback(){}
@@ -877,9 +899,11 @@ if (!complete ){
         console.log('sell quantity left ' + key + ' ' + ask_quantity_left);
         console.log('sell value ' + key + ' ' + ask_value);
         //update buyer balance
+        User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
         user[short_symbol].update({$inc: {balance: ask_quantity_left}}, { w: 1 }, callback);
-        user.update({$inc: {in_positions: ask_maintenance_margin, balance: -1 * ask_value, available_balance: -1 * ask_value}}, { w: 1 }, callback);
+        user.update({$set: {seller: seller}, $inc: {in_positions: ask_maintenance_margin, balance: -1 * ask_value, available_balance: -1 * ask_value}}, { w: 1 }, callback);
         //done updating buyer balance
+        });
 
         time = new Date().getTime();
 
@@ -893,6 +917,8 @@ if (!complete ){
         order_data.save(function(err){
 
         });
+
+
 
 
         if (key == ask.length -1 ){
@@ -914,6 +940,14 @@ if (!complete ){
                     initial_margin: maintenance_margin
             });
 
+            console.log('point 2 ' + key + ' ' + val);
+
+            $.each(ask, function(keyb, valb){
+            if (keyb <= key)
+            order.opposing_orders.push(valb);
+            });
+
+            console.log('test 2 ' + order);
             order.btc_prices.push(current_price);
             user.orders.push(order);
 
@@ -934,10 +968,11 @@ if (!complete ){
 
 
 
+
         });
 
         //update balance on seller
-        User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
+
             seller[short_symbol].update({$inc: {balance: -1 * ask_quantity_left}}, { w: 1 }, function(err){
 
                 seller.update({$inc: {in_positions: ask_maintenance_margin, in_orders: -1 * ask_maintenance_margin, balance: ask_value, available_balance: ask_value, in_orders_non_margin: -1 * ask_value}}, { w: 1 }, function(err){
@@ -1070,6 +1105,7 @@ order = new Order({
                 short_symbol: short_symbol,
                 side: 'ask',
                 price: price,
+                quantity_original: quantity,
                 quantity: quantity,
                 quantity_left: quantity,
                 seller: user,
@@ -1181,6 +1217,7 @@ if (!complete ){
                         short_symbol: short_symbol,
                         side: 'ask',
                         price: ask_price,
+                        quantity_original: ask_quantity,
                         quantity: ask_quantity,
                         quantity_left: 0,
                         seller: user,
@@ -1230,7 +1267,7 @@ if (!complete ){
 
             buyer.update({$inc: {in_orders_non_margin: purchase_cost, in_positions: partial_maintenance_margin, in_orders: -1 * partial_maintenance_margin, balance: -1 * purchase_cost}}, { w: 1 }, function(err){
 
-                buyer[short_symbol].update({$inc: {balance: ask_quantity_left}}, { w: 1 }, function(err){
+                buyer[short_symbol].update({$set:{seller: user}, $inc: {balance: ask_quantity_left}}, { w: 1 }, function(err){
 
                     console.log('right here dude');
                     req.session.processing_sell = false;
@@ -1301,6 +1338,7 @@ if (!complete ){
                     short_symbol: short_symbol,
                     side: 'ask',
                     price: ask_price,
+                    quantity_original: ask_quantity,
                     quantity: ask_quantity,
                     quantity_left: ask_quantity_left,
                     seller: user,
@@ -1335,7 +1373,7 @@ if (!complete ){
         User.findById(val['buyer']).populate(short_symbol).exec(function(err, buyer){
             buyer[short_symbol].update({$inc: {balance: ask_quantity_left}}, { w: 1 }, function(err){
 
-                buyer.update({$inc: {in_positions: bid_maintenance_margin, in_orders: -1 * bid_maintenance_margin, in_orders_non_margin: bid_value, balance: -1 * bid_value}}, { w: 1 }, function(err){
+                buyer.update({$set:{seller: user}, $inc: {in_positions: bid_maintenance_margin, in_orders: -1 * bid_maintenance_margin, in_orders_non_margin: bid_value, balance: -1 * bid_value}}, { w: 1 }, function(err){
 
                     req.session.processing_sell = false;
                     res.end('done');
@@ -1456,6 +1494,7 @@ order = new Order({
                 coin_two_ticker: coin_two_ticker,
                 side: 'ask',
                 price: ask_price,
+                quantity_original: ask_quantity,
                 quantity: ask_quantity,
                 quantity_left: ask_quantity,
                 user: user,
@@ -2022,9 +2061,9 @@ console.log(val);
 
 
 app.get('/balances', function(req,res){
-
+console.log('here');
 if (req.session.activated ){
-
+console.log('here');
 email = req.session.user.email;
 console.log(email);
 
@@ -2035,11 +2074,16 @@ User
 
 //console.log(data.orders);
 orders_populated  = new Array();
+//console.log('the data ' + data);
+//console.log(data.orders);
+if (data.orders.length != 0) {
 $.each(data.orders, function(keyb, valb){
 //console.log('here ' + keyb + ' ' + valb.variation_margin);
 
 
 Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc) {
+
+    console.log("aha");
                 //res.json(doc);
                 //console.log('here2 ' + doc);
                 orders_populated.push(doc);
@@ -2052,7 +2096,17 @@ Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc
                 }
 
             }); 
+        });
 
+}
+else{
+
+    console.log("fucked");
+    console.log(data);
+res.render('tab_template.html', {data: JSON.stringify(data), orders_populated: JSON.stringify(null)});
+
+
+}
 
 
 });
@@ -2065,7 +2119,7 @@ Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc
     //console.log(data);
 
 
-})
+
 
 }
 
@@ -2314,14 +2368,53 @@ res.end("done");
 
 app.post('/exercise_option', function(req,res){
 
-console.log(req.body.order_id);
+//console.log(req.body.order_id);
+Order.findByIdAndUpdate(req.body.order_id, { $set: {pending: 'exercised'}}).populate('opposing_orders').exec( function(err, order){
+console.log(order._id);
+bid_total_quantity = order.quantity;
+
+ask_total = 0;
+$.each(order.opposing_orders, function(key, val){
+
+if (key != order.opposing_orders.length-1 ){
+    //console.log(key);
+    ask_total += val.quantity;
+    console.log(val.quantity);
+
+Order.findByIdAndUpdate(val._id, { $set: {pending: 'exercised'}}, function(err, order){
 
 
+});
+
+
+
+}
+else{
+    //console.log('hi ' + key);
+    console.log('here ' + ask_total);
+left = bid_total_quantity - ask_total;
+console.log(left);
+
+Order.findByIdAndUpdate(val._id, {$inc: {quantity: -1 * left}}, function(err, order){
+
+
+});
+
+
+}
+
+
+});
+
+
+});
+
+/*
 Order.findByIdAndUpdate(req.body.order_id, {$set: {pending: 'exercised'}}, function(err, order){
 
 console.log("order exercised");
 res.end("done");
-});
+});*/
 
 
 });

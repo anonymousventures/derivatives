@@ -820,7 +820,7 @@ $.each(orders, function(key,val){
 "user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
 */
 
-if (val.pending == 'pending' && val.quantity_left != 0){
+if ( (val.pending == 'pending' || val.pending == 'complete') && val.quantity_left != 0){
 
   console.log(val);
 if (val.side == 'ask')
@@ -956,14 +956,14 @@ processed = val.quantity - val.quantity_left;
 //var status = '';
 
 
-if (val.pending == 'complete')
+if (val.pending == 'complete' || val.pending == 'pending')
 status = 'NOT EXERCISED YET';
 else if (val.pending == 'expired')
 status = 'STRIKED OUT';
 else status = 'EXERCISED';
 
 
-
+if (val.quantity == val.quantity_original || val.side == 'bid'){
 substring = '<tr id="tab_row">\
         <td class="tab_td_order">' + val._id + '</td>\
         <td class="tab_td_order">' + type + '</td>\
@@ -978,6 +978,47 @@ substring = '<tr id="tab_row">\
         <td class="tab_td_order">' + status + '</td>\
 </tr>';
 string += substring;
+}
+else{
+
+exercised_amount = val.quantity_original - val.quantity;
+unexercised_amount = parseFloat(val.quantity) - parseFloat(val.quantity_left);
+
+substring = '<tr id="tab_row">\
+        <td class="tab_td_order">' + val._id + '</td>\
+        <td class="tab_td_order">' + type + '</td>\
+        <td class="tab_td_order">' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + order_time + '</td>\
+        <td class="tab_td_order">' + (val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + exercised_amount.toPrecision(5)   + '</td>\
+        <td class="tab_td_order">' + (exercised_amount  * val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + '.015' + '</td>\
+        <td class="tab_td_order">' + (parseFloat(exercised_amount ) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + val.net_variation.toPrecision(5) + '</td>\
+        <td class="tab_td_order">EXERCISED 1</td>\
+</tr>\
+<tr id="tab_row">\
+        <td class="tab_td_order">' + val._id + '</td>\
+        <td class="tab_td_order">' + type + '</td>\
+        <td class="tab_td_order">' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + order_time + '</td>\
+        <td class="tab_td_order">' + (val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + unexercised_amount.toPrecision(5)   + '</td>\
+        <td class="tab_td_order">' + (unexercised_amount  * val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + '.015' + '</td>\
+        <td class="tab_td_order">' + (parseFloat(unexercised_amount) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + val.net_variation.toPrecision(5) + '</td>\
+        <td class="tab_td_order">NOT EXERCISED YET 1 </td>\
+</tr>';
+
+
+
+
+
+string += substring;
+
+}
+
 
 }
 
@@ -1022,7 +1063,7 @@ function predicatBy(prop){
 
 
 
-
+if (orders_populated != null){
 $.each(orders_populated, function(keyb, valb){
 
 valb = valb[0];
@@ -1060,7 +1101,7 @@ string += substring;
 });
 
 }); 
-
+}
 
 
 
