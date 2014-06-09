@@ -150,7 +150,11 @@ var Withdrawal = new mongoose.Schema({
 });
 
 
-
+var VariationMargin = new mongoose.Schema({
+    time: Number,
+    order:  { type: mongoose.Schema.ObjectId, ref: 'Order' },
+    amount: Number
+});
 
 var Order = new mongoose.Schema({
     time: Number,
@@ -166,12 +170,14 @@ var Order = new mongoose.Schema({
     quantity_left: Number,
     initial_margin: Number,
     maintenance_margin: Number,
-    variation_margin: Number,
+    variation_margin: [{ type: mongoose.Schema.ObjectId, ref: 'VariationMargin' }],
+    btc_prices: [Number],
     max_price_change: Number,
     full_symbol: String,
     short_symbol: String,
     fees: String,
     pending: String,
+    net_variation:  { type: Number, default: 0},
     buyer:  { type: mongoose.Schema.ObjectId, ref: 'User' },
     seller: { type: mongoose.Schema.ObjectId, ref: 'User' }
 });
@@ -184,6 +190,7 @@ var OrderData = new mongoose.Schema({
     quantity: Number
     });
 
+VariationMargin = mongoose.model('VariationMargin', VariationMargin);
 Contract = mongoose.model('Contract', Contract);
 User = mongoose.model('User', User);
 Deposit = mongoose.model('Deposit', Deposit);
@@ -375,9 +382,7 @@ if (high_price == null)
 
 
 
-res.render('trade.html', {last_bitstamp: ticker.last, maintenance_margin: maintenance_margin, available_balance: available_balance, contract: JSON.stringify(contract), chart_info: JSON.stringify(chart_array), csrf: JSON.stringify(req.session._csrf), volume: volume, last_price: last_price, low_price: low_price, high_price: high_price, pending_asks: JSON.stringify(pending_asks), pending_bids: JSON.stringify(pending_bids)});
-
-
+res.render('trade.html', {user: JSON.stringify(user),last_bitstamp: ticker.last, maintenance_margin: maintenance_margin, available_balance: available_balance, contract: JSON.stringify(contract), chart_info: JSON.stringify(chart_array), csrf: JSON.stringify(req.session._csrf), volume: volume, last_price: last_price, low_price: low_price, high_price: high_price, pending_asks: JSON.stringify(pending_asks), pending_bids: JSON.stringify(pending_bids)});
 
 
 
@@ -405,6 +410,195 @@ res.render('trade.html', {last_bitstamp: ticker.last, maintenance_margin: mainte
 
 
 
+function process_variation(){
+
+//get all orders that have some amount in positions
+Order.find({pending: {'$ne': 'cancelled' }}).populate('buyer seller').exec(function(err, orders){
+
+$.each(orders, function(key,val){
+in_positions = val.quantity - val.quantity_left;
+if (in_positions > 0){
+
+console.log("the order ");
+//console.log(val);
+
+//calculate variation margin
+bitstamp.ticker(function(err, trades) {
+current_price = parseFloat(trades.last);
+last_index = val.btc_prices.length -1;
+last_price = val.btc_prices[last_index];
+current_price = 800;
+variation = 10/ (current_price - last_price) * in_positions;
+console.log('the val ' + key + ' ' + val);
+console.log('variation ' + key + variation); 
+
+//if it is the buyer
+if (val.side == 'bid'){
+function callback(){}
+
+variation_margin = new VariationMargin({
+    time: new Date().getTime(),
+    order: val,
+    amount: variation
+});
+
+val.buyer.update({$inc: {balance: variation, available_balance: variation}}, { w: 1 }, callback);
+Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin}}, function(err,  order){
+    console.log(order);
+});
+//val.variation_margin.push(variation_margin);
+
+
+}
+//if it is the seller
+else{
+
+function callback(){}
+
+variation_margin = new VariationMargin({
+    time: new Date().getTime(),
+    order: val,
+    amount: -1 * variation
+});
+
+val.seller.update({$inc: {balance: -1 * variation, available_balance: -1 * variation}}, { w: 1 }, callback);
+Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin}});
+
+
+}
+
+});
+
+
+}
+
+
+
+});
+
+
+
+});
+
+
+
+
+
+}
+
+
+app.get('/process_variation', function(req,res){
+
+console.log('ugh');
+
+//get all orders that have some amount in positions
+Order.find({$and: [{pending: {'$ne': 'cancelled' }}, {pending: {'$ne': 'expired' }}, {pending: {'$ne': 'exercised' }} ]}).populate('buyer seller').exec(function(err, orders){
+
+$.each(orders, function(key,val){
+in_positions = val.quantity - val.quantity_left;
+if (in_positions > 0){
+
+//console.log("the order ");
+//console.log(val);
+
+//calculate variation margin
+(function(val, in_positions){
+bitstamp.ticker(function(err, trades) {
+current_price = parseFloat(trades.last);
+last_index = val.btc_prices.length -1;
+last_price = val.btc_prices[last_index];
+
+console.log("current priceb " + current_price);
+//current_price = 800;
+variation = 10/ ((current_price - last_price)* last_price ) * in_positions;
+console.log('the val ' + key + ' ' + last_price);
+console.log('current price ' + key + ' ' + current_price); 
+console.log('last price ' + key + ' ' + last_price); 
+yolo = current_price - last_price;
+console.log('current price - last price ' + yolo);
+console.log('variation ' + key + ' ' +  variation); 
+
+
+//if it is the buyer
+if (val.side == 'bid'){
+function callback(){}
+
+variation_margin = new VariationMargin({
+    time: new Date().getTime(),
+    order: val,
+    amount: variation
+});
+
+variation_margin.save(function(err){
+
+//console.log(err);
+
+});
+
+//console.log(variation_margin);
+
+val.buyer.update({$inc: {balance: variation, available_balance: variation}}, { w: 1 }, callback);
+Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin}, $inc: {net_variation: variation}}, function(err,order){
+
+    //console.log(order);
+
+});
+//val.variation_margin.push(variation_margin);
+
+
+}
+//if it is the seller
+else{
+
+console.log('ask');
+function callback(){}
+
+variation_margin = new VariationMargin({
+    time: new Date().getTime(),
+    order: val,
+    amount: -1 * variation
+});
+
+variation_margin.save(function(err){
+
+//console.log(err);
+
+});
+
+val.seller.update({$inc: {balance: -1 * variation, available_balance: -1 * variation}}, { w: 1 }, callback);
+Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin, $inc: {net_variation: -1 * variation}}}, function(err,order){
+
+    //console.log(order);
+
+});
+
+
+}
+
+});
+}(val, in_positions));
+
+
+}
+
+
+
+});
+
+
+
+});
+
+
+
+
+console.log("processed");
+
+});
+
+//for call options only
+
+
 app.post('/buy_order',  csrf, function(req,res){
 //req.session.processing = false;
 console.log('overhere' + req.session._csrf);
@@ -421,10 +615,13 @@ quantity = req.body.bid_quantity;
 price = req.body.bid_price;
 bid_price = parseFloat(price);
 bid_quantity = parseFloat(quantity);
-maintenance_margin = parseFloat(req.body.maintenance_margin);
-maintenance_margin = bid_price * bid_quantity;
-maintenance_margin_multiplier = 1
-console.log("maintenance margin " + maintenance_margin);
+// maintenance_margin = parseFloat(req.body.maintenance_margin);
+// maintenance_margin = bid_price * bid_quantity;
+// maintenance_margin_multiplier = 1
+//console.log("maintenance margin " + maintenance_margin);
+bitstamp.ticker(function(err, trades) {
+current_price = trades.last;
+maintenance_margin = .4 * (bid_quantity * 10 / current_price);
 
 
 short_symbol = req.body.short_symbol;
@@ -465,6 +662,7 @@ if (ask.length == 0 && quantity > min_order){
 
 console.log("it is in here lol");
 
+
 function callback(){}
 user[short_symbol].update({$inc: {balance: bid_quantity}}, { w: 1 }, callback);
 
@@ -477,7 +675,7 @@ console.log(" down ");
 inc_available = -1 * (fees * bid_quantity + bid_value + maintenance_margin);
 console.log(inc_available);
 
-User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: maintenance_margin, in_orders_non_margin: bid_value}},function(err, user){
+User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: maintenance_margin, in_orders_non_margin: -1 * bid_value}},function(err, user){
 
 order = new Order({
                 time: new Date().getTime(),
@@ -487,9 +685,13 @@ order = new Order({
                 price: price,
                 quantity: quantity,
                 quantity_left: quantity,
+                initial_margin: maintenance_margin,
                 buyer: user, 
                 pending: 'pending'
 });
+
+
+order.btc_prices.push(current_price);
 
 user.orders.push(order);
 
@@ -546,8 +748,9 @@ ask_order_id = val._id;
 ask_price = val.price;
 ask_quantity_left = val.quantity_left;
 purchase_cost = bid_quantity_left * val.price;
-partial_maintenance_margin = purchase_cost;
-ask_maintenance_margin = ask_value;
+partial_maintenance_margin = .4 * (bid_quantity_left * 10 / current_price);
+ask_maintenance_margin = .4 * (ask_quantity_left * 10 / current_price);
+maintenance_margin_multiplier = .4;
 
 (function(ask_value, ask_order_id, ask_price, ask_quantity_left, key, purchase_cost, partial_maintenance_margin, ask_maintenance_margin, maintenance_margin_multiplier){
 if (!complete ){
@@ -592,15 +795,17 @@ if (!complete ){
                         price: bid_price,
                         quantity: bid_quantity,
                         quantity_left: 0,
-                        user: user,
-                        pending: 'complete'
+                        buyer: user,
+                        pending: 'complete',
+                        initial_margin: maintenance_margin
         });
+        order.btc_prices.push(current_price);
 
         order_data = new OrderData({
                             time: time,
                             short_symbol: short_symbol,
                             price: ask_price,
-                            quantity: bid_quantity_left
+                            quantity: bid_quantity_left,
         });
 
         order_data.save(function(err){
@@ -633,7 +838,7 @@ if (!complete ){
 
             purchase_cost = bid_quantity_left * val.price;
 
-            seller.update({$inc: { in_positions: partial_maintenance_margin, in_orders: -1 * partial_maintenance_margin, balance: purchase_cost, available_balance: purchase_cost}}, { w: 1 }, function(err){
+            seller.update({$inc: { in_positions: partial_maintenance_margin, in_orders: -1 * partial_maintenance_margin, balance: purchase_cost, available_balance: purchase_cost, in_orders_non_margin: -1 * purchase_cost}}, { w: 1 }, function(err){
 
                 seller[short_symbol].update({$inc: {balance: -1 * bid_quantity_left}}, { w: 1 }, function(err){
 
@@ -692,8 +897,8 @@ if (!complete ){
 
         if (key == ask.length -1 ){
 
-            in_orders_non_margin = bid_quantity_left * bid_price;
-            in_orders = bid_quantity_left * bid_price * maintenance_margin_multiplier;
+            in_orders_non_margin = -1 * bid_quantity_left * bid_price;
+            in_orders = maintenance_margin_multiplier * (bid_quantity_left * 10 / current_price);
             user.update({$inc: {in_orders_non_margin: in_orders_non_margin, in_orders: in_orders}}, { w: 1 }, callback);
 
             order = new Order({
@@ -704,10 +909,12 @@ if (!complete ){
                     price: bid_price,
                     quantity: bid_quantity,
                     quantity_left: bid_quantity_left,
-                    user: user,
-                    pending: 'pending'
+                    buyer: user,
+                    pending: 'pending',
+                    initial_margin: maintenance_margin
             });
 
+            order.btc_prices.push(current_price);
             user.orders.push(order);
 
 
@@ -733,7 +940,7 @@ if (!complete ){
         User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
             seller[short_symbol].update({$inc: {balance: -1 * ask_quantity_left}}, { w: 1 }, function(err){
 
-                seller.update({$inc: {in_positions: ask_maintenance_margin, in_orders: -1 * ask_maintenance_margin, balance: ask_value, available_balance: ask_value}}, { w: 1 }, function(err){
+                seller.update({$inc: {in_positions: ask_maintenance_margin, in_orders: -1 * ask_maintenance_margin, balance: ask_value, available_balance: ask_value, in_orders_non_margin: -1 * ask_value}}, { w: 1 }, function(err){
 
                     req.session.processing = false;
                     res.end('done');
@@ -771,7 +978,12 @@ if (!complete ){
 
 });
 
+  console.log(trades.last);  
+});
+
 }
+
+
 
 });
 
@@ -794,9 +1006,14 @@ quantity = req.body.ask_quantity;
 price = req.body.ask_price;
 ask_price = parseFloat(price);
 ask_quantity = parseFloat(quantity);
-maintenance_margin = parseFloat(req.body.maintenance_margin);
-maintenance_margin = ask_price * ask_quantity;
-maintenance_margin_multiplier = 1
+// maintenance_margin = parseFloat(req.body.maintenance_margin);
+// maintenance_margin = ask_price * ask_quantity;
+
+bitstamp.ticker(function(err, trades) {
+ maintenance_margin_multiplier = .4
+current_price = trades.last;
+maintenance_margin = .4 * (ask_quantity * 10 / current_price);
+
 console.log("maintenance margin " + maintenance_margin);
 
 short_symbol = req.body.short_symbol;
@@ -841,8 +1058,8 @@ function callback(){}
 user[short_symbol].update({$inc: {balance: -1 * ask_quantity}}, { w: 1 }, callback);
 
 //User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: bid_value}},function(err, user){
-inc_available = -1 * (fees * bid_quantity + maintenance_margin);
-console.log(inc_available);
+// inc_available = -1 * (fees * bid_quantity + maintenance_margin);
+// console.log(inc_available);
 
 
 User.findOneAndUpdate({email: req.session.user.email}, {$inc: {in_orders_non_margin: ask_value, in_orders: maintenance_margin, balance: -1 * fees * ask_quantity, available_balance: -1 * (fees * ask_quantity + maintenance_margin), maintenance_margin: maintenance_margin}},function(err, user){
@@ -856,8 +1073,10 @@ order = new Order({
                 quantity: quantity,
                 quantity_left: quantity,
                 seller: user,
-                pending: 'pending'
+                pending: 'pending',
+                initial_margin: maintenance_margin
 });
+order.btc_prices.push(current_price);
 
 user.orders.push(order);
 
@@ -914,8 +1133,12 @@ bid_order_id = val._id;
 bid_price = val.price;
 bid_quantity_left = val.quantity_left;
 purchase_cost = ask_quantity_left * val.price;
-partial_maintenance_margin = purchase_cost;
-bid_maintenance_margin = bid_value;
+// partial_maintenance_margin = purchase_cost;
+// bid_maintenance_margin = bid_value;
+
+partial_maintenance_margin = .4 * (ask_quantity_left * 10 / current_price);
+bid_maintenance_margin = .4 * (bid_quantity_left * 10 / current_price);
+
 
 (function(bid_value, bid_order_id, bid_price, bid_quantity_left, key, purchase_cost, partial_maintenance_margin, bid_maintenance_margin, maintenance_margin_multiplier){
 if (!complete ){
@@ -960,15 +1183,19 @@ if (!complete ){
                         price: ask_price,
                         quantity: ask_quantity,
                         quantity_left: 0,
-                        user: user,
-                        pending: 'complete'
+                        seller: user,
+                        pending: 'complete',
+                        initial_margin: maintenance_margin
         });
+
+        order.btc_prices.push(current_price);
 
         order_data = new OrderData({
                             time: time,
                             short_symbol: short_symbol,
                             price: bid_price,
-                            quantity: ask_quantity_left
+                            quantity: ask_quantity_left,
+                            initial_margin: maintenance_margin
         });
 
         order_data.save(function(err){
@@ -1001,7 +1228,7 @@ if (!complete ){
 
             purchase_cost = ask_quantity_left * val.price;
 
-            buyer.update({$inc: {in_orders_non_margin: -1 * purchase_cost, in_positions: partial_maintenance_margin, in_orders: -1 * partial_maintenance_margin, balance: -1 * purchase_cost}}, { w: 1 }, function(err){
+            buyer.update({$inc: {in_orders_non_margin: purchase_cost, in_positions: partial_maintenance_margin, in_orders: -1 * partial_maintenance_margin, balance: -1 * purchase_cost}}, { w: 1 }, function(err){
 
                 buyer[short_symbol].update({$inc: {balance: ask_quantity_left}}, { w: 1 }, function(err){
 
@@ -1065,7 +1292,7 @@ if (!complete ){
             fees = .001;
             fee_total = fees * ask_quantity;
             in_orders_non_margin = ask_quantity_left * ask_price;
-            in_orders = ask_quantity_left * ask_price * maintenance_margin_multiplier;
+            in_orders =  maintenance_margin_multiplier *  (ask_quantity_left * 10 / current_price);;
             user.update({$inc: {in_orders: in_orders, available_balance: -1 * ( maintenance_margin + fee_total)}}, { w: 1 }, callback);
 
             order = new Order({
@@ -1076,9 +1303,12 @@ if (!complete ){
                     price: ask_price,
                     quantity: ask_quantity,
                     quantity_left: ask_quantity_left,
-                    user: user,
-                    pending: 'pending'
+                    seller: user,
+                    pending: 'pending',
+                    initial_margin: maintenance_margin
             });
+
+            order.btc_prices.push(current_price);
 
             user.orders.push(order);
 
@@ -1105,7 +1335,7 @@ if (!complete ){
         User.findById(val['buyer']).populate(short_symbol).exec(function(err, buyer){
             buyer[short_symbol].update({$inc: {balance: ask_quantity_left}}, { w: 1 }, function(err){
 
-                buyer.update({$inc: {in_positions: bid_maintenance_margin, in_orders: -1 * bid_maintenance_margin, in_orders_non_margin: -1 * bid_value, balance: -1 * bid_value}}, { w: 1 }, function(err){
+                buyer.update({$inc: {in_positions: bid_maintenance_margin, in_orders: -1 * bid_maintenance_margin, in_orders_non_margin: bid_value, balance: -1 * bid_value}}, { w: 1 }, function(err){
 
                     req.session.processing_sell = false;
                     res.end('done');
@@ -1140,6 +1370,8 @@ if (!complete ){
 }
 });
 
+
+});
 
 });
 
@@ -1226,8 +1458,10 @@ order = new Order({
                 price: ask_price,
                 quantity: ask_quantity,
                 quantity_left: ask_quantity,
-                user: user
+                user: user,
+                initial_margin: maintenance_margin
 });
+order.btc_prices.push(current_price);
 
 user.orders.push(order);
 
@@ -1327,8 +1561,10 @@ console.log("fuckingtest" + bid_quantity_left + ' ' + ask_quantity_left);
                         quantity: ask_quantity,
                         quantity_left: 0,
                         user: user,
-                        pending: 'complete'
+                        pending: 'complete',
+                        initial_margin: maintenance_margin
         });
+        order.btc_prices.push(current_price);
 
         order_data = new OrderData({
                             time: time,
@@ -1450,9 +1686,11 @@ console.log("fuckingtest" + bid_quantity_left + ' ' + ask_quantity_left);
                     quantity: ask_quantity,
                     quantity_left: ask_quantity_left,
                     user: user,
-                    pending: 'pending'
+                    pending: 'pending',
+                    initial_margin: maintenance_margin
             });
 
+            order.btc_prices.push(current_price);
             user.orders.push(order);
 
             user.save(function(err){
@@ -1747,6 +1985,42 @@ User
 
 });
 
+
+app.get('/exercise_option', function(req,res){
+
+
+
+if (req.session.activated ){
+
+email = req.session.user.email;
+console.log(email);
+
+User
+.findOne({ email: email })
+.populate('orders')
+.exec(function (err, data) {
+
+$.each(data.orders, function(key,val){
+in_positions = val.quantity - val.quantity_left;
+if (in_positions > 0 && val.pending != 'exercised' && val.pending != 'expired'){
+
+
+
+console.log(val);
+
+
+}
+
+});
+
+
+});
+
+}
+
+});
+
+
 app.get('/balances', function(req,res){
 
 if (req.session.activated ){
@@ -1756,10 +2030,40 @@ console.log(email);
 
 User
 .findOne({ email: email })
-.populate('opt_one deposits withdrawals')
+.populate('opt_one deposits withdrawals orders')
 .exec(function (err, data) {
-    console.log(data);
-    res.render('tab_template.html', {data: JSON.stringify(data)});
+
+//console.log(data.orders);
+orders_populated  = new Array();
+$.each(data.orders, function(keyb, valb){
+//console.log('here ' + keyb + ' ' + valb.variation_margin);
+
+
+Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc) {
+                //res.json(doc);
+                //console.log('here2 ' + doc);
+                orders_populated.push(doc);
+                console.log(keyb);
+                if (keyb == data.orders.length -1){
+                    console.log('the orders ' + orders_populated);
+                    res.render('tab_template.html', {data: JSON.stringify(data), orders_populated: JSON.stringify(orders_populated)});
+
+
+                }
+
+            }); 
+
+
+
+});
+// array = new Array();
+// array.push(data.orders[0]._id);
+
+
+
+
+    //console.log(data);
+
 
 })
 
@@ -2007,6 +2311,20 @@ res.end("done");
 
 });
 
+
+app.post('/exercise_option', function(req,res){
+
+console.log(req.body.order_id);
+
+
+Order.findByIdAndUpdate(req.body.order_id, {$set: {pending: 'exercised'}}, function(err, order){
+
+console.log("order exercised");
+res.end("done");
+});
+
+
+});
 
 app.get('/withdraw/confirm/:hash', function(req,res){
 hash = req.params.hash;

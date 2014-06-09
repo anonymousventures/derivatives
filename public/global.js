@@ -6,7 +6,7 @@ else
   prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
 
 
-if (document.URL.indexOf('trading') != -1 || document.URL.indexOf('voting') != -1 || document.URL.indexOf('fees') != -1 || document.URL.indexOf('about') != -1 || document.URL.indexOf('support') != -1 || document.URL == prefix){
+if (document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('voting') != -1 || document.URL.indexOf('fees') != -1 || document.URL.indexOf('about') != -1 || document.URL.indexOf('support') != -1 || document.URL == prefix){
 
 
 if (activated){
@@ -20,6 +20,7 @@ string = '<li class="dropdown">\
             <li><a href="' + prefix + 'balances#tabe">Withdrawals</a></li>\
             <li><a href="' + prefix + 'balances#tabf">Orders</a></li>\
             <li><a href="' + prefix + 'balances#tabg">Trade History</a></li>\
+            <li><a href="' + prefix + 'balances#tabh">Exercise Options</a></li>\
             <li><a href="logout">Logout</a></li>\
           </ul>\
         </li>';
@@ -772,11 +773,13 @@ $(this).parent().next().remove();
   }
 
 
+
+
 function generate_orders(){
 
     $('#orders_li').attr('class', 'active');
 
-    orders = data;
+    orders = data.orders;
     //alert(withdrawals);
     order_count = orders.length;
 
@@ -791,11 +794,22 @@ Below is a list of orders that you have made. \
 Any completed orders will show up under trade history. <br><br>\
 Displaying orders 1 - ' + orders.length + ' of ' + orders.length +
 '</div>\
-<table class="table" id="tab_table">\
-<tbody id="balance_tbody"><tr class="active"> <td span="1">ORDER ID</td>\
-   <td span="1">TYPE</td>  <td span="1">MARKET</td>\
-     <td span="1">TIME</td>    <td class="col-md-1">PRICE</td> <td class="col-md-1">AMOUNT</td>\
-     <td class="col-md-1">TOTAL</td><td class="col-md-1">FEE</td><td class="col-md-1">NET TOTAL</td class="col-md-1"><td class="col-md-1"> </td></tr>';
+<table class="table table-bordered">\
+        <thead>\
+          <tr>\
+            <th>ORDER ID</th>\
+            <th>TYPE</th>\
+            <th>OPTION NAME</th>\
+            <th>TIME</th>\
+            <th>PRICE</th>\
+            <th>AMOUNT</th>\
+            <th>TOTAL</th>\
+            <th>FEE</th>\
+            <th>NET TOTAL</th>\
+            <th></th>\
+          </tr>\
+        </thead><tbody>';
+
 
 //alert(string);
 
@@ -805,7 +819,11 @@ $.each(orders, function(key,val){
 /*"time" : 1400544396647, "coin_one_ticker" : "doge", "coin_two_ticker" : "btc", "side" : "ask", "price" : 150, "quantity" : 1, "quantity_left" : 1, 
 "user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
 */
-if (val.type == 'ask')
+
+if (val.pending == 'pending' && val.quantity_left != 0){
+
+  console.log(val);
+if (val.side == 'ask')
   type = 'SELL';
 else
   type = 'BUY';
@@ -822,51 +840,359 @@ else
     hi = hi.substr(0, index);
     order_time = hi;
 
-
+console.log(val._id);
 
 substring = '<tr id="tab_row">\
         <td class="tab_td_order">' + val._id + '</td>\
         <td class="tab_td_order">' + type + '</td>\
-        <td class="tab_td_order">' + val.coin_one_ticker.toUpperCase() + '/' + val.coin_two_ticker.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + val.short_symbol.toUpperCase() + '</td>\
         <td class="tab_td_order">' + order_time + '</td>\
-        <td class="tab_td_order">' + val.price + '</td>\
-        <td class="tab_td_order">' + val.quantity + '</td>\
-        <td class="tab_td_order">' + val.quantity * val.price + '</td>\
+        <td class="tab_td_order">' + (val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + (val.quantity_left).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + (val.quantity_left * val.price).toPrecision(5)  + '</td>\
         <td class="tab_td_order">' + '.015' + '</td>\
-        <td class="tab_td_order">' + val.quantity * val.price * .015 + '</td>\
+        <td class="tab_td_order">' + (parseFloat(val.quantity_left) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
         <td class="tab_td_order">\
         <a class="cancel_order" href="#" order_id="' + val._id + '">\
-        <img src="https://www.GenesisBlock.com/assets/images/icons/delete.png"  alt="Cancel" class="2x" width="16"><br>  Cancel </a>\
+        <img src="' + prefix + 'img/delete.png"  alt="Cancel" class="2x" width="16" style="margin-left: 14px"><br>  Cancel </a>\
         </td>\
 </tr>';
 string += substring;
+
+}
 
 });
 
 string += '</tbody></table>'; 
 
-$('#below_tab_wrapper').append(string);
-
-
-$('.cancel_order').click(function(){
-
-order_id = $(this).attr('order_id');
-      $.ajax({
-        url: "/cancel_order",
-        type: "POST",
-        data: {order_id: order_id},
-        dataType: "html"
-      }).done(function(data){
-
-        alert(data);
-
-      });
-
-    });
+return string;
 
 
 
-  
+
+
+
+}
+
+
+function generate_trade_history(){
+
+
+    orders = data.orders;
+    console.log('AHA ' + JSON.stringify(orders));
+    //alert(withdrawals);
+    order_count = orders.length;
+
+//alert(deposits);
+length = 0;
+$.each(orders, function(key,val){
+if (val.pending == 'complete')
+  length ++;
+else if (val.pending == 'pending' && (val.quantity != val.quantity_left))
+  length++;
+
+});
+
+
+
+    string = '<div class="tab_header">\
+Open Orders\
+</div>\
+<div class="tab_description">\
+Below is a list of completed orders that you have made. \
+Any pending orders will show up under \'Your Orders\'. <br><br>\
+Displaying orders 1 - ' + length + ' of ' + length +
+'</div>\
+<table class="table table-bordered">\
+        <thead>\
+          <tr>\
+            <th>ORDER ID</th>\
+            <th>TYPE</th>\
+            <th>OPTION NAME</th>\
+            <th>TIME</th>\
+            <th>PRICE</th>\
+            <th>AMOUNT</th>\
+            <th>TOTAL</th>\
+            <th>FEE</th>\
+            <th>NET TOTAL</th>\
+            <th>NET VARIATION MARGIN</th>\
+            <th>STATUS</th>\
+          </tr>\
+        </thead><tbody>';
+
+
+//alert(string);
+
+
+$.each(orders, function(key,val){
+  console.log(JSON.stringify(val));
+
+/*"time" : 1400544396647, "coin_one_ticker" : "doge", "coin_two_ticker" : "btc", "side" : "ask", "price" : 150, "quantity" : 1, "quantity_left" : 1, 
+"user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
+*/
+  //console.log('ah ' + JSON.stringify(val));
+if (val.pending == 'complete' || (val.pending == 'pending' && (val.quantity != val.quantity_left)) || val.pending == 'exercised' || val.pending == 'expired'){
+
+  //console.log('ah ' + JSON.stringify(val));
+if (val.side == 'ask')
+  type = 'SELL';
+else
+  type = 'BUY';
+
+
+    
+    time = parseInt(val.time.toString().substring(0, val.time.toString().length - 3));
+    
+    array = moment.unix(time).toArray();
+    var hi = moment.utc(array);
+        //alert(hi);
+    hi = hi.toString();
+    index = hi.indexOf('GM');
+    hi = hi.substr(0, index);
+    order_time = hi;
+
+//console.log(val._id);
+processed = val.quantity - val.quantity_left;
+//var status = '';
+
+
+if (val.pending == 'complete')
+status = 'NOT EXERCISED YET';
+else if (val.pending == 'expired')
+status = 'STRIKED OUT';
+else status = 'EXERCISED';
+
+
+
+substring = '<tr id="tab_row">\
+        <td class="tab_td_order">' + val._id + '</td>\
+        <td class="tab_td_order">' + type + '</td>\
+        <td class="tab_td_order">' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + order_time + '</td>\
+        <td class="tab_td_order">' + (val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + processed.toPrecision(5)   + '</td>\
+        <td class="tab_td_order">' + (processed  * val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + '.015' + '</td>\
+        <td class="tab_td_order">' + (parseFloat(processed ) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + val.net_variation.toPrecision(5) + '</td>\
+        <td class="tab_td_order">' + status + '</td>\
+</tr>';
+string += substring;
+
+}
+
+});
+
+string += '</tbody></table>'; 
+
+
+
+//second part of table
+
+    string += '<div class="tab_header">\
+Open Orders\
+</div>\
+<div class="tab_description">\
+Below is a list of completed orders that you have made. \
+Any pending orders will show up under \'Your Orders\'. <br><br>\
+Displaying orders 1 - ' + length + ' of ' + length +
+'</div>\
+<table class="table table-bordered">\
+        <thead>\
+          <tr>\
+            <th>ORDER ID</th>\
+            <th>TYPE</th>\
+            <th>OPTION NAME</th>\
+            <th>TIME</th>\
+            <th>VARIATION MARGIN</th>\
+          </tr>\
+        </thead><tbody>';
+
+
+function predicatBy(prop){
+   return function(a,b){
+      if( a[prop] > b[prop]){
+          return 1;
+      }else if( a[prop] < b[prop] ){
+          return -1;
+      }
+      return 0;
+   }
+}
+
+
+
+
+$.each(orders_populated, function(keyb, valb){
+
+valb = valb[0];
+//console.log('here ' + JSON.stringify(valb.variation_margin));
+valb.variation_margin = valb.variation_margin.sort( predicatBy("time") );
+
+
+
+$.each(valb.variation_margin, function(keyc, valc){
+
+    
+    time = parseInt(valc.time.toString().substring(0, valc.time.toString().length - 3));
+    
+    array = moment.unix(time).toArray();
+    var hi = moment.utc(array);
+        //alert(hi);
+    hi = hi.toString();
+    index = hi.indexOf('GM');
+    hi = hi.substr(0, index);
+    variation_time = hi;
+
+
+
+substring = '<tr id="tab_row">\
+        <td class="tab_td_order">' + valb._id + '</td>\
+        <td class="tab_td_order">' + valb.side + '</td>\
+        <td class="tab_td_order">' + valb.short_symbol + '</td>\
+        <td class="tab_td_order">' + variation_time+ '</td>\
+        <td class="tab_td_order">' + valc.amount + '</td>\
+</tr>';
+//console.log('ugh ' + JSON.stringify(valc.time));
+
+string += substring; 
+
+});
+
+}); 
+
+
+
+
+
+
+
+
+
+
+string += '</tbody></table>'; 
+
+
+
+
+
+return string;
+
+
+
+
+
+
+}
+
+
+
+function generate_exercise_options(){
+
+
+    orders = data.orders;
+    //alert(withdrawals);
+    order_count = orders.length;
+
+//alert(deposits);
+length = 0;
+$.each(orders, function(key,val){
+if (val.pending == 'completed')
+  length ++;
+else if (val.pending == 'pending' && (val.quantity != val.quantity_left))
+  length++;
+
+});
+
+
+
+    string = '<div class="tab_description">\
+Below is a list of options that you can exercise. \
+Displaying options 1 - ' + length + ' of ' + length +
+'</div>\
+<table class="table">\
+        <thead>\
+          <tr>\
+            <th>ORDER ID</th>\
+            <th>TYPE</th>\
+            <th>OPTION NAME</th>\
+            <th>TIME</th>\
+            <th>PRICE</th>\
+            <th>AMOUNT</th>\
+            <th>TOTAL</th>\
+            <th>FEE</th>\
+            <th>NET TOTAL</th>\
+            <th>NET VARIATION MARGIN</th>\
+            <th></th>\
+          </tr>\
+        </thead><tbody>';
+
+
+//alert(string);
+
+
+$.each(orders, function(key,val){
+  console.log(JSON.stringify(val));
+
+/*"time" : 1400544396647, "coin_one_ticker" : "doge", "coin_two_ticker" : "btc", "side" : "ask", "price" : 150, "quantity" : 1, "quantity_left" : 1, 
+"user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
+*/
+  //console.log('ah ' + JSON.stringify(val));
+if (val.side == 'bid' && val.pending == 'complete' || (val.pending == 'pending' && (val.quantity != val.quantity_left)) ){
+
+  //console.log('ah ' + JSON.stringify(val));
+if (val.side == 'ask')
+  type = 'SELL';
+else
+  type = 'BUY';
+
+
+    
+    time = parseInt(val.time.toString().substring(0, val.time.toString().length - 3));
+    
+    array = moment.unix(time).toArray();
+    var hi = moment.utc(array);
+        //alert(hi);
+    hi = hi.toString();
+    index = hi.indexOf('GM');
+    hi = hi.substr(0, index);
+    order_time = hi;
+
+//console.log(val._id);
+processed = val.quantity - val.quantity_left;
+
+substring = '<tr id="tab_row">\
+        <td class="tab_td_order">' + val._id + '</td>\
+        <td class="tab_td_order">' + type + '</td>\
+        <td class="tab_td_order">' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + order_time + '</td>\
+        <td class="tab_td_order">' + (val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + processed.toPrecision(5)   + '</td>\
+        <td class="tab_td_order">' + (processed  * val.price).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + '.015' + '</td>\
+        <td class="tab_td_order">' + (parseFloat(processed ) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
+        <td class="tab_td_order">' + val.net_variation.toPrecision(5) + '</td>\
+        <td class="tab_td_order"><a class="exercise_option" href="#" order_id="' + val._id + '">        <img src="http://localhost:8080/img/check.png" alt="Exercise" class="2x" width="16" style="margin-left: 20px"><br>  Exercise </a></td>\
+</tr>';
+string += substring;
+
+}
+
+});
+
+string += '</tbody></table>'; 
+
+
+
+
+
+return string;
+
+
+
+
+
+
 }
 
 
@@ -905,7 +1231,7 @@ $.each(orders, function(key,val){
 /*"time" : 1400544396647, "coin_one_ticker" : "doge", "coin_two_ticker" : "btc", "side" : "ask", "price" : 150, "quantity" : 1, "quantity_left" : 1, 
 "user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
 */
-if (val.type == 'ask')
+if (val.side == 'ask')
   type = 'SELL';
 else
   type = 'BUY';
@@ -988,6 +1314,24 @@ pending_bids = {{{pending_bids}}};
 */
 //get expiration time
  // alert(contract.expiration_time);
+
+  $('#right_bar').empty();
+string = '<li class="dropdown">\
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Logged in as  ' + user.full_name + '<b class="caret"></b></a>\
+          <ul class="dropdown-menu">\
+            <li><a href="profile">Profile</a></li>\
+            <li><a href="' + prefix + 'balances#taba">Balances</a></li>\
+            <li><a href="' + prefix + 'balances#tabd">Deposits</a></li>\
+            <li><a href="' + prefix + 'balances#tabe">Withdrawals</a></li>\
+            <li><a href="' + prefix + 'balances#tabf">Orders</a></li>\
+            <li><a href="' + prefix + 'balances#tabg">Trade History</a></li>\
+            <li><a href="logout">Logout</a></li>\
+          </ul>\
+        </li>';
+
+$('#right_bar').append(string);
+
+
 
     expiration_time = parseInt(contract.expiration_time.toString().substring(0, contract.expiration_time.toString().length - 3));
     
@@ -1078,7 +1422,7 @@ pending_bids = {{{pending_bids}}};
     <div class="box options">\
                 <span class="label_style">Amount:</span> <input type="number" id="bid_quantity" name="amount" value="' + new Number(0).toPrecision(9) + '" class="required"> ' + contract.short_symbol + '<br>\
                 <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="bid_price" name="price" value="' + pending_asks[0].price.toPrecision(9) + '" class="required"> BTC<br>\
-                <span class="label_style">Current Bitcoin Price:</span> <span type="number" id="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
+                <span class="label_style">Current Bitcoin Price:</span> <span type="number" class="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
                 <span class="label_style">Strike Price:</span> <span type="number" id="strike_price">' + '$' + contract.strike_price + '</span> <br>\
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
                 <span class="label_style">Margin Requirement:</span> <span type="number" class="margin" id="buy_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
@@ -1123,7 +1467,7 @@ pending_bids = {{{pending_bids}}};
     <div class="box options">\
                 <span class="label_style">Amount:</span> <input type="number" id="ask_quantity" name="amount" value="0.00000000" class="required"> ' + contract.short_symbol + '<br>\
                 <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="ask_price" name="price" value="' + pending_bids[0].price.toPrecision(9) + '" class="required"> BTC<br>\
-                <span class="label_style">Current Bitcoin Price:</span> <span type="number" id="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
+                <span class="label_style">Current Bitcoin Price:</span> <span type="number" class="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
                 <span class="label_style">Strike Price:</span> <span type="number" id="strike_price">' + '$' + contract.strike_price + '</span> <br>\
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
                 <span class="label_style">Margin Requirement:</span> <span type="number"  class="margin" id="sell_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
@@ -1164,18 +1508,21 @@ pending_bids = {{{pending_bids}}};
 $('.inner_content').append(string);
 
 
-
-    margin = .1;
+    margin = .4;
     bitcoin_price = 570;
 
     $('#bid_quantity').on('change', function () {
       bid_quantity = $('#bid_quantity').val();
       bid_price = $('#bid_price').val();
       //margin calculation tbd
-      buy_margin = margin * bid_quantity;
+      current_price = $('.current_btc_price').html();
+      current_price = current_price.substr(1, current_price.length);
+      current_price = parseFloat(current_price);
+
+      buy_margin = margin * (bid_quantity * 10 / current_price);
 
       $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (bid_quantity * bid_price * .0015).toPrecision(9));
+      $('#buy_fee').html( (bid_quantity * .0015).toPrecision(9));
       $('.netTotalBuy').html( (bid_quantity * bid_price * 1.0015).toPrecision(9));
       $('#buy_margin').html(buy_margin.toPrecision(9));
 
@@ -1210,12 +1557,13 @@ $('.inner_content').append(string);
       bid_quantity = $('#bid_quantity').val();
       bid_price = $('#bid_price').val();
       //margin calculation tbd
-      buy_margin = margin * bid_quantity;
+      buy_margin = $('#buy_margin').html();
+      buy_margin = buy_margin.substr(1, buy_margin.length);
+      buy_margin = parseFloat(buy_margin);
 
       $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (bid_quantity * bid_price * .0015).toPrecision(9));
+      $('#buy_fee').html( (bid_quantity * .0015).toPrecision(9));
       $('.netTotalBuy').html( (bid_quantity * bid_price * 1.0015).toPrecision(9));
-      $('#buy_margin').html(buy_margin.toPrecision(9));
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -1253,11 +1601,15 @@ $('.inner_content').append(string);
       ask_quantity = $('#ask_quantity').val();
       ask_price = $('#ask_price').val();
       //margin calculation tbd
-      sell_margin = margin * ask_quantity;
+      current_price = $('.current_btc_price').html();
+      current_price = current_price.substr(1, current_price.length);
+      current_price = parseFloat(current_price);
+
+      sell_margin = margin * (ask_quantity * 10 / current_price);
 
       $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (ask_quantity * ask_price * .0015).toPrecision(9));
-      $('.netTotalSell').html( (ask_quantity * ask_price * 1.0015).toPrecision(9));
+      $('#sell_fee').html( (ask_quantity * .0015).toPrecision(9));
+      $('.netTotalSell').html( (ask_quantity * ask_price * .9985).toPrecision(9));
       $('#sell_margin').html(sell_margin.toPrecision(9));
 
       //alert('test');
@@ -1288,12 +1640,14 @@ $('.inner_content').append(string);
       ask_quantity = $('#ask_quantity').val();
       ask_price = $('#ask_price').val();
       //margin calculation tbd
-      sell_margin = margin * ask_quantity;
 
       $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (ask_quantity * ask_price * .0015).toPrecision(9));
+      $('#sell_fee').html( (ask_quantity * .0015).toPrecision(9));
       $('.netTotalSell').html( (ask_quantity * ask_price * 1.0015).toPrecision(9));
-      $('#sell_margin').html(sell_margin.toPrecision(9));
+      sell_margin = $('#sell_margin').html();
+      sell_margin = sell_margin.substr(1, sell_margin.length);
+      sell_margin = parseFloat(sell_margin);
+
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -1326,15 +1680,13 @@ $('.inner_content').append(string);
 
     $('#buy_order').click(function(){
 
-          if ($('#error_message').html().length > 3)
+        if ($('#error_message').html().length > 3)
         $("html, body").animate({ scrollTop: 0 }, "slow");
 
       bid_quantity = $('#bid_quantity').val();
       bid_price = $('#bid_price').val();
       buy_margin = $('#buy_margin').html();
-      
       //alert(buy_amount);
-
       //alert(coin_ticker_one);
 
       $.ajax({
@@ -1358,7 +1710,6 @@ $('.inner_content').append(string);
       sell_margin = parseFloat($('#sell_margin').html());
 
       //alert(buy_amount);
-
 
       $.ajax({
         url: "/ask",
@@ -1388,15 +1739,16 @@ $('.inner_content').append(string);
     
     $('#balances_li').attr('class', 'active');
 
-//alert(JSON.stringify(data));
 
-a_string ='<table class="table table-bordered">\
+
+a_string ='<div class="table-responsive"><table class="table table-bordered">\
         <thead>\
           <tr>\
             <th>CURERNCY</th>\
             <th>AMOUNT</th>\
-            <th>IN POSITIONS <br> (margin)</th>\
-            <th>IN ORDERS<br> (offer for options)</th>\
+            <th>MARGIN  <br> (in positions)</th>\
+            <th>MARGIN  <br> (in orders)</th>\
+            <th>NET IN ORDERS * </th>\
             <th>REQUIRED<br>MARGIN</th>\
             <th>AVAILABLE</th>\
             <th>PENDING <br>DEPOSITS</th>\
@@ -1405,17 +1757,18 @@ a_string ='<table class="table table-bordered">\
         </thead>\
         <tbody>\
           <tr>\
-            <td>'+ data.balance + '</td>\
-            <td>'+ data.in_positions + '</td>\
-            <td>'+ data.in_orders + '</td>\
-            <td>'+ data.in_orders_non_margin + '</td>\
-            <td>'+ data.maintenance_margin + '</td>\
-            <td>'+ data.available_balance + '</td>\
-            <td>'+ data.pending_deposits + '</td>\
-            <td>'+ data.pending_withdrawals + '</td>\
+            <td>BTC</td>\
+            <td>'+ data.balance.toPrecision(6) + '</td>\
+            <td>'+ data.in_positions.toPrecision(6)  + '</td>\
+            <td>'+ data.in_orders.toPrecision(6)  + '</td>\
+            <td>'+ data.in_orders_non_margin.toPrecision(6)  + '</td>\
+            <td>'+ data.maintenance_margin.toPrecision(6)  + '</td>\
+            <td>'+ data.available_balance.toPrecision(6)  + '</td>\
+            <td>'+ data.pending_deposits.toPrecision(6)  + '</td>\
+            <td>'+ data.pending_withdrawals.toPrecision(6)  + '</td>\
           </tr>\
         </tbody>\
-      </table>'
+      </table></div>'
 
 
 yolo ='<table class="table" id="tab_table">\
@@ -1532,19 +1885,19 @@ if (ending == 'your_withdrawals')
 your_withdrawals = 'active';
 */
 e_string = generate_withdrawals();
-f_string = 'yolo';
-g_string = 'yolo';
-h_string = 'ah';
+f_string = generate_orders();
+g_string = generate_trade_history();
+h_string = generate_exercise_options();
 
-
-string = '<ul class="nav nav-pills nav-stacked col-md-2" id="nav_pills" style="margin-top: 30px">\
-  <li class="" id="your_funds"><a href="#your_funds_tab" data-toggle="tab">Your Funds</a></li>\
-  <li class="" id="add_funds"><a href="#add_funds_tab" data-toggle="tab">Add Funds</a></li>\
-  <li class="" id="withdraw_funds"><a href="#withdraw_funds_tab" data-toggle="tab">Withdraw Funds</a></li>\
-  <li class="" id="your_deposits"><a href="#your_deposits_tab" data-toggle="tab">Your Deposits</a></li>\
-  <li class="" id="your_withdrawals"><a href="#your_withdrawals_tab" data-toggle="tab">Your Withdrawals</a></li>\
-  <li class="" id="your_orders"><a href="#your_orders_tab" data-toggle="tab">Your Orders</a></li>\
-  <li class="" id="your_trades"><a href="#your_trade_history_tab" data-toggle="tab">Your Trade History</a></li>\
+string = '<ul class="nav nav-pills nav-stacked " id="nav_pills" style="margin-top: 30px">\
+  <li class="" id="your_funds"><a href="#your_funds_tab" data-toggle="pill" class="top_href" >Your Funds</a></li>\
+  <li class="" id="add_funds"><a href="#add_funds_tab" data-toggle="pill" class="top_href">Add Funds</a></li>\
+  <li class="" id="withdraw_funds"><a href="#withdraw_funds_tab" data-toggle="tab" class="top_href">Withdraw Funds</a></li>\
+  <li class="" id="your_deposits"><a href="#your_deposits_tab" data-toggle="tab" class="top_href">Your Deposits</a></li>\
+  <li class="" id="your_withdrawals"><a href="#your_withdrawals_tab" data-toggle="tab" class="top_href">Your Withdrawals</a></li>\
+  <li class="" id="your_orders"><a href="#your_orders_tab" data-toggle="tab" class="top_href">Your Orders</a></li>\
+  <li class="" id="your_trades"><a href="#your_trade_history_tab" data-toggle="tab" class="top_href">Your Trade History</a></li>\
+  <li class="" id="your_options"><a href="#your_exercise_options_tab" data-toggle="tab" class="top_href">Exercise Options</a></li>\
 </ul>\
 <div class="tab-content col-md-10">\
         <div class="tab-pane tab_add" id="your_funds_tab">\
@@ -1561,6 +1914,8 @@ string = '<ul class="nav nav-pills nav-stacked col-md-2" id="nav_pills" style="m
              <h3>Your Orders</h3><br>' + f_string + '</div>\
         <div class="tab-pane tab_add" id="your_trade_history_tab">\
              <h3>Your Trade History</h3><br>' + g_string + '</div>\
+        <div class="tab-pane tab_add" id="your_exercise_options_tab">\
+             <h3>Exercise Options</h3><br>' + h_string + '</div>\
 </div>';
 
 
@@ -1578,6 +1933,7 @@ string = '<li class="dropdown">\
             <li><a  style="cursor:pointer;" id="withdrawals_a">Withdrawals</a></li>\
             <li><a  style="cursor:pointer;" id="orders_a">Orders</a></li>\
             <li><a  style="cursor:pointer;" id="trade_history_a">Trade History</a></li>\
+            <li><a  style="cursor:pointer;" id="exercise_options_a">Exercise Options</a></li>\
             <li><a  style="cursor:pointer;" id="logout_a">Logout</a></li>\
           </ul>\
         </li>';
@@ -1610,39 +1966,58 @@ $('#trade_history_a').click(function(event){
   }             
 );
 
+$('#trade_history_a').click(function(event){
+    $("[href='#your_trade_history_tab']").click();
+  }             
+);
+
+$('#exercise_options_a').click(function(event){
+    $("[href='#your_exercise_options_tab']").click();
+  }             
+);
+
 
 url = document.URL;
 ending = url.substr(url.indexOf('#') + 1, url.length);
-//alert(ending);
 
-if (ending == 'taba'){
+
+if (ending == 'taba' || ending == prefix + 'balances'){
   //alert($("[href='#your_funds_tab']").attr('href'));
 $("[href='#your_funds_tab']").click();
 }
-if (ending == 'tabb'){
+else if (ending == 'tabb'){
   //alert('hi');
 $("[href='#add_funds_tab']").click();
 }
-if (ending == 'tabc'){
+else if (ending == 'tabc'){
 
 $("[href='#withdraw_funds_tab']").click();
 }
-if (ending == 'tabd'){
+else if (ending == 'tabd'){
 
 $("[href='#your_deposits_tab']").click();
 }
-if (ending == 'tabe'){
+else if (ending == 'tabe'){
 
 $("[href='#your_withdrawals_tab']").click();
 }
-if (ending == 'tabf'){
+else if (ending == 'tabf'){
 
 $("[href='#your_orders_tab']").click();
 }
-if (ending == 'tabg'){
+else if (ending == 'tabg'){
 
 $("[href='#your_trade_history_tab']").click();
 }
+else if (ending == 'tabh'){
+
+$("[href='#your_exercise_options_tab']").click();
+}
+else{
+  $("[href='#your_funds_tab']").click();
+}
+
+
 
 
 //$('#' + ending).attr('class', 'active');
@@ -1893,6 +2268,52 @@ id = id.substr(9, id.length);
 test = prefix + 'withdraw/' + id;
 window.location = test;
 });
+
+$('.cancel_order').click(function(){
+
+order_id = $(this).attr('order_id');
+//alert($(this).parent().parent().attr('id'));
+
+      //$(this).parent().parent().remove();
+      
+
+      $.ajax({
+        url: "/cancel_order",
+        type: "POST",
+        data: {order_id: order_id},
+        dataType: "html"
+      }).done(function(data){
+
+        $('a[order_id=\'' + order_id + '\']').parent().parent().remove();
+        //alert('Order Cancelled');
+
+      });
+
+    });
+
+
+
+$('.exercise_option').click(function(){
+
+order_id = $(this).attr('order_id');
+//alert($(this).parent().parent().attr('id'));
+
+      //$(this).parent().parent().remove();
+      
+
+      $.ajax({
+        url: "/exercise_option",
+        type: "POST",
+        data: {order_id: order_id},
+        dataType: "html"
+      }).done(function(data){
+
+        $('a[order_id=\'' + order_id + '\']').parent().parent().remove();
+        //alert('Order Cancelled');
+
+      });
+
+    });
 
 
   }
