@@ -101,7 +101,6 @@ user = {{{user}}};
         <li class="active" style="margin-left: 30px"><a href="#">Link</a></li>
         -->
         <li><a  href="trading">Trading</a></li>
-        <li ><a href="voting">Voting</a></li>
         <li><a href="fees">Fees</a></li>
         <li><a href="about">About</a></li>
         <li><a href="support">Support</a></li>  
@@ -135,6 +134,82 @@ user = {{{user}}};
 </nav>
 
 <div id="user_info"></div>
+<div id="top_area" class="center">
+  <br>
+  <h1 id="index_top_header">GenesisBlock Exchange </h1>
+ <h3 id="index_top_middle">The world's first bitcoin options exchange</h3>
+
+<span id="index_buttons">
+<button type="button" class="btn btn-custom btn-lg">Register</button> <button type="button" class="btn btn-custom  btn-lg">Log In</button> </span>
+
+</div>
+<div id="middle_area">
+
+  <div class="index_col col-md-3 col-lg-3 col-sm-3 col-xs-3"><img style="height:50px" class="index_icon" src='http://localhost:8080/img/trade_icon.png'>
+  <h3 class="desc">Real-time Trading </h3>
+  <h5 class="col-md-12 desc"> Trade in real-time with live updating prices so you never miss the action.</h5>
+
+  </div>
+
+  <div class="index_col col-md-3 col-lg-3 col-sm-3 col-xs-3"><img style="height:80px; margin-top: 12px" class="index_icon" src='http://localhost:8080/img/low_fees.png'>
+  <h3 class="desc" style="margin-top: 10px">No fees </h3>
+  <h5 class="col-md-12 desc"> We are currently not taking any trading fees! </h5>
+
+  </div>
+
+  <div class="index_col col-md-3 col-lg-3 col-sm-3 col-xs-3"><img style="height:60px; margin-top: 25px" class="index_icon" src='http://localhost:8080/img/lock_icon.png'>
+  <h3 class="desc">Security </h3>
+  <h5 class="col-md-12 desc"> GenesisBlock has been built with bitcoin security principles in mind. We utilise cold storage and strict firewalls.</h5>
+
+  </div>
+
+  <div class="index_col col-md-3 col-lg-3 col-sm-3 col-xs-3"><img style="height:50px; margin-top:39px" class="index_icon" src='http://localhost:8080/img/support_icon.png'>
+  <h3 class="desc">Great Support</h3>
+  <h5 class="col-md-12 desc"> Our support team handle customer queries throughout the day, never will you experience a long wait for a reply.</h5>
+
+  </div>
+
+
+</div>
+
+<div id="bottom_area">
+<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">
+
+<div class="index_col_container">
+<h2 class="bottom_col">Live Trades </h2>
+    <table class="table table-bordered live_trades"  style="margin-bottom:50px">
+        <thead>
+          <tr>
+            <th>Time Since</th>
+            <th>Option Symbol</th>
+            <th>Amount</th>
+            <th>Price</th>
+          </tr>
+        </thead><tbody> 
+<tr id="tab_row" style="margin-bottom: 30px" group="' + group + '">
+        <td class="tab_td_order">sdf</td>
+        <td class="tab_td_order">sdf</td>
+        <td class="tab_td_order">sdf</td>
+        <td class="tab_td_order">sdf</td>
+</tr>
+
+
+      </tbody></table>
+
+
+</div>
+</div>
+
+<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">
+<h2 class="bottom_col">Live OrderBook </h2>
+
+
+
+</div>
+
+</div>
+
+
 
 </body>
 </html>

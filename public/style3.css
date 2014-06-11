@@ -30,8 +30,10 @@ body {
 
 #about_explanation{
   text-align: left;
-  margin-left: 50px;
-  margin-right: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+  margin-bottom: 30px;
 }
 
 #fees_explanation{
@@ -70,6 +72,58 @@ margin-right: 30px;
   margin-left: 30px;
   margin-right: 30px;
 
+}
+
+#top_area{
+  margin-top: 50px;
+  height: 295px;
+  background-color: #185574;
+}
+
+.index_col_container{
+  max-width:400px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#middle_area{
+  background-color: #4895BD;
+  height: 245px;
+}
+
+.bottom_col{
+  margin-top:15px;
+  margin-bottom: 15px;
+}
+
+#index_top_header{
+  color: white;
+  font-size:50px;
+}
+
+#index_top_middle{
+  margin-top:30px;
+  margin-bottom: 40px;
+  color: white;
+}
+
+.live_trades{
+  max-width: 400px;
+}
+
+.index_icon{
+  //height:50px;
+  width: auto;
+  margin-top:30px;
+}
+
+.index_col{
+  text-align: center;
+}
+
+.desc{
+  color: #222;
 }
 
 
@@ -154,6 +208,31 @@ font-size: 18px;
   line-height: 60px;
 }
 
+.contract_row{
+  height: 40px;
+  line-height: 60px;
+}
+
+.contract_href{
+  color: #333 !important;
+  cursor: pointer;
+  //text-decoration: underline;
+}
+
+.contract_info_href{
+  //color: #333 !important;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 15px;
+}
+
+.contract_page_href{
+  //color: #333 !important;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 15px;
+}
+
 
 .tab_td{
   height:50px !important;
@@ -165,7 +244,35 @@ font-size: 18px;
 .tab_td_order{
     height: 50px;
     vertical-align: middle !important
+}
 
+.contract_table{
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#contract_header{
+  margin-top: 70px;
+  margin-bottom: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  max-width: 900px;
+  font-size: 40px;
+}
+
+.td_contract{
+  height: 35px;
+  text-align: left;
+  vertical-align: middle !important
+}
+
+.td_contract_left{
+  height: 35px;
+  text-align: left;
+  vertical-align: middle !important;
+  width: 150px;
 }
 
 .cancel_order{
@@ -536,6 +643,39 @@ text-transform: uppercase;
 .offer_table{
   border-collapse: collapse;
     border-spacing: 0;
+}
+
+#options_table{
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#contract_table{
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-custom {
+  background-color: hsl(0, 0%, 16%) !important;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#5b5b5b", endColorstr="#282828");
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#5b5b5b), to(#282828));
+  background-image: -moz-linear-gradient(top, #5b5b5b, #282828);
+  background-image: -ms-linear-gradient(top, #5b5b5b, #282828);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #5b5b5b), color-stop(100%, #282828));
+  background-image: -webkit-linear-gradient(top, #5b5b5b, #282828);
+  background-image: -o-linear-gradient(top, #5b5b5b, #282828);
+  background-image: linear-gradient(#5b5b5b, #282828);
+  border-color: #282828 #282828 hsl(0, 0%, 11%);
+  color: #fff !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.33);
+  -webkit-font-smoothing: antialiased;
+}
+
+#index_buttons{
+
 }
 
 /*

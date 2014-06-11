@@ -105,6 +105,24 @@ var Contract = new mongoose.Schema({
     balance: { type: Number, default: 0},
 });
 
+var ContractRef = new mongoose.Schema({
+    contract_number: Number,
+    expiration_group: Number,
+    expiration_time: Number,
+    start_time: Number,
+    option_type: String,
+    strike_price: Number,
+    initial_margin: Number,
+    maintenance_margin: Number,
+    variation_margin: Number,
+    max_price_change: Number,
+    full_symbol: String,
+    short_symbol: String,
+    fees: Number,
+    balance: { type: Number, default: 0},
+});
+
+
 var User = new mongoose.Schema({
     email: String,
     password: String,
@@ -124,8 +142,93 @@ var User = new mongoose.Schema({
     in_positions: { type: Number, default: 0},
     in_orders: { type: Number, default: 0},
     in_orders_non_margin: { type: Number, default: 0},
-    opt_one: { type: mongoose.Schema.ObjectId, ref: 'Contract' }
+    BUSD1: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD2: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD3: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD4: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD5: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD6: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD7: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD8: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD9: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD10: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD11: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD12: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD13: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD14: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD15: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD16: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD17: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD18: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD19: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD20: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD21: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD22: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD23: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD24: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD25: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD26: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD27: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD28: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD29: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD30: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD31: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD32: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD33: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD34: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD35: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD36: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD37: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD38: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD39: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD40: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD41: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD42: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD43: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD44: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD45: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD46: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD47: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD48: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD49: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD50: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD51: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD52: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD53: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD54: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD55: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD56: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD57: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD58: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD59: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD60: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD61: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD62: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD63: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD64: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD65: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD66: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD67: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD68: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD69: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD70: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD71: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD72: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD73: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD74: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD75: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD76: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD77: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD78: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
+BUSD79: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
 });
+
+
+for (i=0; i<80; i++){
+
+    //console.log('BUSD' + i + ': { type: mongoose.Schema.ObjectId, ref: \'Contract\' },')
+
+}
 
 
 var Deposit = new mongoose.Schema({
@@ -199,6 +302,7 @@ Deposit = mongoose.model('Deposit', Deposit);
 Withdrawal = mongoose.model('Withdrawal', Withdrawal);
 Order = mongoose.model('Order', Order);
 OrderData = mongoose.model('OrderData', OrderData);
+ContractRef = mongoose.model('ContractRef', ContractRef);
 
 
 
@@ -1951,35 +2055,65 @@ sendgrid.send({
 
 bitcoin_client.getNewAddress(function(err, address) {
 
+
+expiration_times = new Array(1404259200000, 1404950400000, 1407628800000, 1410307200000, 1412899200000, 1418169600000, 1425945600000, 1436486400000)
+
+counter = 0;
+$.each(expiration_times, function(key,val){
+
+
+for (i = 5; i<15; i++){
+counter++;
+strike_price = i * 100;    
+date = new Date(val);
+day = date.getDate();
+month = date.getMonth() +1;
+year = date.getYear().toString();
+year = year.substr(1, year.length);
+
+short_symbol = 'BUSD' + counter;
 contract = new Contract({
-    expiration_time: 1402358400000, //june 10th
-    start_time: 1399680000000, //may 10th already started
+    contract_number: counter,
+    expiration_group: key,
+    expiration_time: val, 
+    start_time: 1435708800000, //july 1st
     option_type: 'call',
-    strike_price: 700,
-    initial_margin: 2,
-    maintenance_margin: 2,
-    variation_margin: 1,
-    max_price_change: .15,
-    full_symbol: 'opt_one',
-    short_symbol: 'opt_one',
+    strike_price: strike_price,
+    initial_margin: .3,
+    maintenance_margin: .3,
+    variation_margin: .3,
+    max_price_change: .3,
+    full_symbol: 'BTC/USD-' + day + '/' + month +'/' + year + '-' + strike_price,
+    short_symbol: short_symbol,
     fees: .01,
 });
 
+contract.save(function(err){
+
+});
+obj = new Object();
+obj.deposit_address = address;
+obj[short_symbol] = contract;
 
 
-User.findOneAndUpdate({hash: token}, {$set: {deposit_address: address, opt_one: contract}},function(err, user){
+User.findOneAndUpdate({hash: token}, {$set: obj },function(err, user){
 console.log("added deposit address to user: " + JSON.stringify(user));
 console.log("edited");
 
 });
 
-contract.save(function(err){
 
-console.log("coin saved");
+}
+
 
 });
 
-console.log('coin saved');
+
+
+
+
+
+
 
 
 });
@@ -1999,7 +2133,187 @@ console.log('coin saved');
 
 });
 
+date = new Date().getTime();
+date = new Date(date);
+day = date.getDate();
+console.log(day);
 
+
+app.get('/save_contracts', function(req,res){
+
+
+expiration_times = new Array(1404259200000, 1404950400000, 1407628800000, 1410307200000, 1412899200000, 1418169600000, 1425945600000, 1436486400000)
+
+counter = 0;
+$.each(expiration_times, function(key,val){
+
+
+for (i = 5; i<15; i++){
+counter++;
+strike_price = i * 100;    
+date = new Date(val);
+day = date.getDate();
+month = date.getMonth() +1;
+year = date.getYear().toString();
+year = year.substr(1, year.length);
+
+
+
+new ContractRef({
+    contract_number: counter,
+    expiration_group: key,
+    expiration_time: val, 
+    start_time: 1435708800000, //july 1st
+    option_type: 'call',
+    strike_price: strike_price,
+    initial_margin: .3,
+    maintenance_margin: .3,
+    variation_margin: .3,
+    max_price_change: .3,
+    full_symbol: 'BTC/USD-' + day + '/' + month +'/' + year + '-' + strike_price,
+    short_symbol: 'BUSD' + counter,
+    fees: .01,
+}).save(function(err){
+
+});
+
+
+}
+
+
+});
+
+/*
+contract_one = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: 2,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_one',
+    short_symbol: 'opt_one',
+    fees: .01,
+});
+
+contract_two = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: .3,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_two',
+    short_symbol: 'opt_two',
+    fees: .01,
+});
+
+
+contract_three = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: .4,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_three',
+    short_symbol: 'opt_three',
+    fees: .01,
+});
+
+
+contract_four = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: .5,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_four',
+    short_symbol: 'opt_four',
+    fees: .01,
+});
+
+
+contract_five = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: .6,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_five',
+    short_symbol: 'opt_five',
+    fees: .01,
+});
+
+
+contract_six = new ContractRef({
+    expiration_time: 1402358400000, //june 10th
+    start_time: 1399680000000, //may 10th already started
+    option_type: 'call',
+    strike_price: 700,
+    initial_margin: .7,
+    maintenance_margin: 2,
+    variation_margin: 1,
+    max_price_change: .15,
+    full_symbol: 'opt_six',
+    short_symbol: 'opt_six',
+    fees: .01,
+});
+
+
+contract_one.save(function(err){
+
+console.log("coin saved");
+
+});
+
+contract_two.save(function(err){
+
+console.log("coin saved");
+
+});
+
+contract_three.save(function(err){
+
+console.log("coin saved");
+
+});
+
+contract_four.save(function(err){
+
+console.log("coin saved");
+
+});
+
+contract_five.save(function(err){
+
+console.log("coin saved");
+
+});
+
+contract_six.save(function(err){
+
+console.log("coin saved");
+
+});
+*/
+
+
+
+
+});
 
 
 app.post('/get_address', function(req,res){
@@ -2214,6 +2528,27 @@ res.render('fees.html', {activated: activated, user: JSON.stringify(user) });
 
 });
 
+app.get('/contract/:short_symbol', function(req,res){
+
+activated = req.session.activated;
+user = req.session.user;
+
+//console.log(activated);
+if (activated == undefined) 
+    activated = false;
+
+console.log(activated);
+console.log(user);
+
+ContractRef.findOne({short_symbol: req.params.short_symbol}, function(err, contract){
+    console.log(contract);
+res.render('contract.html', {activated: activated, user: JSON.stringify(user), contract: JSON.stringify(contract)});
+});
+
+
+
+});
+
 app.get('/about', function(req,res){
 
 activated = req.session.activated;
@@ -2231,17 +2566,149 @@ res.render('about.html', {activated: activated, user: JSON.stringify(user) });
 
 app.get('/trading', function(req,res){
 
+
+
 activated = req.session.activated;
 user = req.session.user;
 
-//console.log(activated);
+console.log(activated);
 if (activated == undefined) 
     activated = false;
 
 console.log(activated);
 console.log(user);
-res.render('trading.html', {activated: activated, user: JSON.stringify(user) });
+ContractRef.find({}).sort({contract_number: 1}).exec(function(err, contracts){
+//console.log(contracts);
 
+
+bitstamp.ticker(function(err, ticker) {
+contracts_modified = new Array();
+current_price = ticker.last;
+
+counter = 0;
+$.each(contracts, function(key,val){
+//sub = $.parseJSON(contracts[key]);
+//console.log(contracts[key].short_symbol);
+short_symbol = val.short_symbol;
+(function(val, short_symbol, key, current_price){
+    //console.log(short_symbol);
+Order.findOne({$and: [{short_symbol: short_symbol}, {pending: 'pending'}, {side: 'bid'}]}).sort('-price').limit(1).exec(function(err, bid){
+Order.findOne({$and: [{short_symbol: short_symbol}, {pending: 'pending'}, {side: 'ask'}]}).sort('-price').limit(1).exec(function(err, ask){
+
+sub = new Object();
+sub.expiration_time = val.expiration_time;
+sub.start_time = val.start_time;
+sub.option_type = val.option_type;
+sub.strike_price = val.strike_price;
+sub.initial_margin = val.initial_margin;
+sub.maintenance_margin = val.maintenance_margin;
+sub.variation_margin = val.variation_margin;
+sub.max_price_change = val.max_price_change;
+sub.full_symbol = val.full_symbol;
+sub.short_symbol = val.short_symbol;
+sub.fees = val.fees;
+sub.balance = val.balance;
+sub.expiration_group = val.expiration_group;
+sub.contract_number = val.contract_number;
+if (bid != null){
+sub.bid = bid.price;
+extrinsic_bid = (10/(current_price * (current_price - val.strike_price)));
+
+//extrinsic and iv bid
+if (current_price > val.strike_price){
+sub.extrinsic_bid = extrinsic_bid;
+sub.intrinsic_bid = bid.price - extrinsic_bid;
+
+
+}
+else{
+sub.extrinsic_bid = bid.price;
+sub.intrinsic_bid = 0;
+
+}
+
+
+}
+else{
+sub.bid = 0;
+sub.extrinsic_bid = 0;
+sub.intrinsic_bid = 0;
+
+
+
+}
+
+
+
+
+if (ask != null){
+sub.ask = ask.price;
+extrinsic_ask = (10/(current_price * (current_price - val.strike_price)));
+
+if (current_price > val.strike_price){
+sub.extrinsic_ask = extrinsic_ask;
+sub.intrinsic_ask = bid.price - extrinsic_ask;
+
+}
+else{
+sub.extrinsic_ask = ask.price;
+sub.intrinsic_ask = 0;
+
+}
+
+}
+else{
+sub.ask = 0;
+sub.extrinsic_ask = 0;
+sub.intrinsic_ask = 0;
+
+
+}
+
+//console.log(JSON.stringify(sub));
+
+contracts_modified.push(sub);
+counter++;
+
+if (counter == contracts.length -1){
+//console.log(JSON.stringify(contracts_modified));
+console.log(key);
+console.log(contracts.length);
+
+
+function sortByGroup(a, b){
+  var aName = a.contract_number;
+  var bName = b.contract_number;
+  return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+}
+
+contracts_modified = contracts_modified.sort(sortByGroup);
+
+
+console.log(JSON.stringify(contracts_modified));
+
+
+
+res.render('trading.html', {activated: activated, user: JSON.stringify(user), contracts: JSON.stringify(contracts_modified)});
+}
+
+
+
+});
+});
+})(val, short_symbol, key, current_price);
+
+
+
+});
+});
+
+//console.log(contracts_modified);
+
+//res.render('trading.html', {activated: activated, user: JSON.stringify(user), contracts: JSON.stringify(contracts)});
+
+
+});
 
 
 });

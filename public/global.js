@@ -6,7 +6,7 @@ else
   prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
 
 
-if (document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('voting') != -1 || document.URL.indexOf('fees') != -1 || document.URL.indexOf('about') != -1 || document.URL.indexOf('support') != -1 || document.URL == prefix){
+if (document.URL.indexOf('contract') != -1 || document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('voting') != -1 || document.URL.indexOf('fees') != -1 || document.URL.indexOf('about') != -1 || document.URL.indexOf('support') != -1 || document.URL == prefix){
 
 
 if (activated){
@@ -28,6 +28,79 @@ string = '<li class="dropdown">\
 $('#right_bar').append(string);
 
 }
+}
+
+
+if (document.URL.indexOf('trading') != -1 ){
+
+string = generate_options_table();
+$('#options_table').append(string);
+
+
+
+     $("a.contract_page_href").on("click",function(){
+         short_symbol = $(this).attr("short_symbol");
+         window.open(prefix + 'market/' + short_symbol ,'_blank');
+     });
+
+        /*
+      $('option').on('change',function (e) {
+alert("yolo");
+
+      e.preventDefault();
+
+      var target = this.hash,
+      $target = $(target);
+
+      $('html, body').stop().animate({
+          'scrollTop': $target.offset().top
+      }, 900, 'swing', function () {
+          window.location.hash = target;
+      });
+
+  });
+      */
+
+
+      $('.select_expiration').change(function() {
+        val = $(this).val();
+        $('.select_expiration').val(val);
+    $('html, body').animate({
+        scrollTop: $('[group=' + val + ']').offset().top - 170
+    }, 1000);
+
+
+});
+
+
+}
+
+if (document.URL.indexOf('contract') != -1 ){
+
+$('#contract_header').append(contract.full_symbol);
+
+string = generate_contract_table();
+//alert(string);
+$('#contract_table').append(string);
+
+
+
+
+}
+
+
+function format_time(time){
+
+      expiration_time = parseInt(time.toString().substring(0, time.toString().length - 3));
+    
+    expiration_time = moment.unix(expiration_time).toArray();
+    expiration_time = moment.utc(expiration_time);
+    expiration_time = expiration_time.toString();
+    index = expiration_time.indexOf('+');
+    expiration_time = expiration_time.substr(0, index);
+
+    return expiration_time;
+
 }
 
 /*
@@ -775,6 +848,214 @@ $(this).parent().next().remove();
 
 
 
+function generate_options_table(){
+
+
+
+selection = '';
+
+expiration_array = new Array(1404259200000, 1404950400000, 1407628800000, 1410307200000, 1412899200000, 1418169600000, 1425945600000, 1436486400000);
+
+
+
+$.each(expiration_array, function(key,val){
+expiration_group = key + 1;
+expiration_time = format_time(val);
+    sub = '<option value="'+ expiration_group + '">' + expiration_time +'</option>';
+    selection += sub;
+});
+
+//$('.select_expiration').html(selection);
+
+//alert(deposits);
+string ='';
+//<select class="form-control select_expiration" style="width:300px" >' + selection + '</select>
+    table_top = '<table class="table table-bordered"  style="margin-bottom:50px">\
+        <thead>\
+          <tr>\
+            <th>Option Name</th>\
+            <th>Type</th>\
+            <th>Bid</th>\
+            <th>Ask</th>\
+            <th>Extrinsic <br> Bid / Ask</th>\
+            <th>IV <br> Bid / Ask</th>\
+            <th>Volume</th>\
+            <th>Open Interest</th>\
+            <th>Strike</th>\
+            <th>Expiration</th>\
+          </tr>\
+        </thead><tbody>';
+
+//string += table_top;
+
+//alert(string);
+//alert(JSON.stringify(contracts));
+
+$.each(contracts, function(key,val){
+
+
+if (val.bid == null){
+bid = 'n/a';
+intrinsic_bid = 'n/a'
+extrinsic_bid = 'n/a';
+
+}
+else{
+bid = val.bid;
+intrinsic_bid = val.intrinsic_bid;
+extrinsic_bid = val.extrinsic_bid;
+
+
+
+}
+
+
+if (val.ask == null){
+ask = 'n/a';
+intrinsic_ask = 'n/a';
+extrinsic_ask = 'n/a';
+}
+else{
+ask = val.ask;
+intrinsic_ask  = val.intrinsic_ask;
+extrinsic_ask = val.extrinsic_ask;
+}
+
+volume = 0;
+open_interest = 0;
+strike_price = val.strike_price;
+
+
+
+
+expiration_time = format_time(val.expiration_time);
+
+substring = '';
+
+
+if (key%10 == 0){
+group = (key/10) + 1;
+console.log(key);
+console.log(selection);
+substring = '';
+
+if (key!=0)
+substring += '<span style="text-align: left; margin-left: 0px !important">Select by expiration time:</span> <br> <select class="form-control select_expiration" style="width:300px" >' + selection + '</select>';
+
+substring += table_top + '<tr id="tab_row" style="margin-bottom: 30px" group="' + group + '">\
+        <td class="tab_td_order"><a class="contract_page_href" short_symbol="' + val.short_symbol + '">' + val.short_symbol + '</td>\
+        <td class="tab_td_order">' + val.option_type.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + bid + '</td>\
+        <td class="tab_td_order">' + ask + '</td>\
+        <td class="tab_td_order">' + extrinsic_bid + '<br>' + extrinsic_ask + '</td>\
+        <td class="tab_td_order">' + intrinsic_bid + '<br>' + intrinsic_ask + '</td>\
+        <td class="tab_td_order">' + volume + '</td>\
+        <td class="tab_td_order">' + open_interest  + '</td>\
+        <td class="tab_td_order">' + strike_price + '</td>\
+        <td class="tab_td_order">' + expiration_time + '</td>\
+</tr>';
+//alert(substring);
+}
+else{
+substring = '<tr id="tab_row">\
+        <td class="tab_td_order"><a class="contract_page_href" short_symbol="' + val.short_symbol + '">' + val.short_symbol + '</td>\
+        <td class="tab_td_order">' + val.option_type.toUpperCase() + '</td>\
+        <td class="tab_td_order">' + bid + '</td>\
+        <td class="tab_td_order">' + ask + '</td>\
+        <td class="tab_td_order">' + extrinsic_bid + '<br>' + extrinsic_ask + '</td>\
+        <td class="tab_td_order">' + intrinsic_bid + '<br>' + intrinsic_ask + '</td>\
+        <td class="tab_td_order">' + volume + '</td>\
+        <td class="tab_td_order">' + open_interest  + '</td>\
+        <td class="tab_td_order">' + strike_price + '</td>\
+        <td class="tab_td_order">' + expiration_time + '</td>\
+</tr>';  
+
+}
+string += substring; 
+
+
+
+
+
+
+
+//}
+
+});
+
+string += '</tbody></table>'; 
+
+//alert(string);
+
+return string;
+
+
+
+}
+
+
+
+function generate_contract_table(){
+
+
+start_time = format_time(contract.start_time);
+end_time = format_time(contract.expiration_time);
+max_price_change = contract.max_price_change * 100; //percent
+
+    string = '<table class="table table-bordered contract_table"><tbody><tr class="contract_row">\
+        <td class="td_contract_left">Full Symbol</td>\
+        <td class="td_contract">' + contract.full_symbol + '</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Short Symbol</td>\
+        <td class="td_contract">' + contract.short_symbol + '</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Type</td>\
+        <td class="td_contract">Call option on the Bitcoin - US dollar exchange rate.</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Tick Size (R)</td>\
+        <td class="td_contract">$1</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Tick value (W)</td>\
+        <td class="td_contract">$10</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Fees</td>\
+        <td class="td_contract">0.0001 BTC for 1 contract trade or settlement. Subject to change.</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Trading starts</td>\
+        <td class="td_contract">' + start_time + '</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Settlement date</td>\
+        <td class="td_contract">' + end_time+ '</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Strike price</td>\
+        <td class="td_contract">' + contract.strike_price + ' USD</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Max price change during one trading session</td>\
+        <td class="td_contract">±' + max_price_change + '%  relative to the close price of the last trading session. Subject to change.' + '</td>\
+        </tr>\
+        <tr class="contract_row">\
+        <td class="td_contract_left">Variation Margin</td>\
+        <td class="td_contract">VM = -(PriceClose - PriceOpen) * W/R, where PriceClose and PriceOpen are calculated in BTC as 1/Price_in_USD</td>\
+        </tr>\
+</tr></tbody></table>'; 
+//alert(string);
+return string;
+
+
+
+}
+
+
+
 function generate_orders(){
 
     $('#orders_li').attr('class', 'active');
@@ -1420,8 +1701,8 @@ $('#right_bar').append(string);
 
     string = '<div id="top_header">\
     <div id="left_header">\
-    <div id="trade_pair_header">' + contract.short_symbol + '</div>' + 
-    contract.short_symbol + '</div>\
+    <div id="trade_pair_header"><a class="contract_href">' + contract.short_symbol + '</a></div>' + 
+    contract.full_symbol + '<br> <a class="contract_info_href">Contract Info</a></div>\
     <div id="right_header">\
     <div class="stat">\
     <span class="title">LAST PRICE</span>\
@@ -1767,7 +2048,13 @@ $('.inner_content').append(string);
 
 
 
+     $("a.contract_href").on("click",function(){
+         window.open(prefix + 'contract/' + contract.short_symbol ,'_blank');
+     });
 
+     $("a.contract_info_href").on("click",function(){
+         window.open(prefix + 'contract/' + contract.short_symbol ,'_blank');
+     });
 
 
 
