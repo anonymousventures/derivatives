@@ -46,7 +46,12 @@
 
 
 <script src="/socket.io/socket.io.js"></script>
+<script>
+activated = {{{activated}}};
+user = {{{user}}};
+//alert(user);
 
+</script>
 <script src="global.js"></script>
 
 <script>
@@ -78,15 +83,15 @@
         -->
         <li><a  href="trading">Trading</a></li>
         <li><a href="fees">Fees</a></li>
-        <li><a href="about">About</a></li>
-        <li><a href="support">Support</a></li>  
-        <li><a href="faq">FAQ</a></li>
+        <li ><a href="about">About</a></li>
+        <li  ><a href="support">Support</a></li> 
+        <li class="active"><a href="faq">FAQ</a></li>  
         
       </ul>
 
-      <ul class="nav navbar-nav navbar-right">
+      <ul id="right_bar" class="nav navbar-nav navbar-right">
         <li><a href="register" id="register">Register</a></li>
-        <li class="active" ><a href="#" id="login">Login</a></li>
+        <li><a href="login" id="login">Login</a></li>
 
             <!--<li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
@@ -111,82 +116,25 @@
 
 
 <div class="center">
-<div id="register_title">Login</div>
+<div id="voting_header"> FAQ </div>
 
-<table class="table" id="register_table">
+<div id="about_explanation">
+<h2> How are maintenance margins enforced on the opposing side of the trade? </h2>
 
-  <tr >
-  <td class="active left_table">Email Address</td>
-  <td >
-  <input type="text" class=" register_input" id="email">
-  </td>
-  </tr>
+If the user on the opposing side of the trade fails to maintain the required margin of 75% of the initial margin, he is subject to a margin call at anytime. However, the trader on the opposing side has a disincentive to be margin called. Still, in the case that the opposing trader fails to maintain the position's margin, and if the variation margin at expiration or exercise time is greater than the opposing trader's maintenance margin - then the position is automatically closed and your maximum profit is capped at the opposing trader's maintenance margin. In most positions, this would still allow you to profit completely on your position up to a 30% change in Bitcoin price. 
 
-  <tr >
-  <td class="active left_table">Password</td>
-  <td >
-  <input type="password" class=" register_input" id="password">
-  </td>
-  </tr>
+<h2> Why use GenesisBlock.io instead of a regular exchange when speculating on bitcoin? </h2>
 
-</table>
-<a href="forgot" style="color: black; text-decoration: underline">Forgot Password?</a><br><br>
+GenesisBlock.io allows you to effectively trade with 3:1 leverage on Bitcoin. So, if you maintain your minimum maintenance margin, you can make 3 times as much profit on an equal rise or drop in the price of bitcoin. At the same time, this of course makes it more risky.
 
- <button type="button" class="btn btn-default" id="login_button">Login</button>
+
+
+
+</div>
 
 
 </div>
 </div>
-<script type="text/javascript">
-  
-  /*
-if (document.URL.indexOf('localhost') != -1 )
-  prefix = 'http://localhost:8080/';
-else
-  prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
 
-
-$('#login_button').click(function(){
-
-email = $('#email').val();
-password = $('#password').val();
-
-if ( email.length == 0 || password.length == 0 )
-  alert('Please make sure you filled out all values in the form');
-
-else {
-
-
-$.ajax({
-  url: "/login",
-  type: "POST",
-  data: { email: email, password: password},
-  dataType: "html"
-}).done(function(data){
-
-if (data == 'incorrect')
-  alert("Incorrect username or password");
-else if (data == 'unactivated')
-  alert("User has not been activated yet. Please check email");
-else{
-  alert("yolo");
-localStorage.setItem('email', email);
-//alert(localStorage.getItem('email'));
-alert(prefix);
-//alert(data)
-window.location = prefix;
-}
-
-});
-
-}
-
-
-
-});
-*/
-
-
-</script>
 </body>
 </html>

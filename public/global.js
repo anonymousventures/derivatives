@@ -1162,7 +1162,7 @@ max_price_change = contract.max_price_change * 100; //percent
         </tr>\
         <tr class="contract_row">\
         <td class="td_contract_left">Tick Size (R)</td>\
-        <td class="td_contract">$1</td>\
+        <td class="td_contract">$.01</td>\
         </tr>\
         <tr class="contract_row">\
         <td class="td_contract_left">Tick value (W)</td>\
@@ -1170,7 +1170,7 @@ max_price_change = contract.max_price_change * 100; //percent
         </tr>\
         <tr class="contract_row">\
         <td class="td_contract_left">Fees</td>\
-        <td class="td_contract">0.0001 BTC for 1 contract trade or settlement. Subject to change.</td>\
+        <td class="td_contract">No trading fees! Subject to change in future.</td>\
         </tr>\
         <tr class="contract_row">\
         <td class="td_contract_left">Trading starts</td>\
@@ -1912,7 +1912,7 @@ $('#right_bar').append(string);
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
                 <span class="label_style">Margin Requirement:</span> <span type="number" class="margin" id="buy_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
                 <span class="label_style">Total:</span> <span class="total" id="buy_total">' + pending_asks[0].price.toPrecision(9) + '</span> <br>\
-                <span class="label_style">Trading Fee:</span> <span class="fee" id="buy_fee">0.00000000</span> BTC (' + (10 * order_fee).toPrecision(2) +  '%)<br>\
+                <span class="label_style">Trading Fee:</span> <span class="fee" id="buy_fee">0.00000000</span> BTC (' + (0).toPrecision(2) +  '%)<br>\
                 <span class="label_style">Net Total:</span> <span class="netTotalBuy" >' + pending_asks[0].price.toPrecision(9) + '</span> BTC\
                           <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_asks[0].price.toPrecision(9) + '" class="required">\
     </div>\
@@ -1957,7 +1957,7 @@ $('#right_bar').append(string);
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
                 <span class="label_style">Margin Requirement:</span> <span type="number"  class="margin" id="sell_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
                 <span class="label_style">Total:</span> <span class="total" id="sell_total">' + pending_bids[0].price.toPrecision(9) + '</span> <br>\
-                <span class="label_style">Trading Fee:</span> <span class="fee" id="sell_fee">0.00000000</span> BTC (' + (10 * order_fee).toPrecision(2) +  '%)<br>\
+                <span class="label_style">Trading Fee:</span> <span class="fee" id="sell_fee">0.00000000</span> BTC (' + (0).toPrecision(2) +  '%)<br>\
                 <span class="label_style">Net Total:</span> <span class="netTotalSell" >' + pending_bids[0].price.toPrecision(9) + '</span> BTC\
                           <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_bids[0].price.toPrecision(9) + '" class="required">\
               </div>\
@@ -2007,8 +2007,8 @@ $('.inner_content').append(string);
       buy_margin = margin * (bid_quantity * 10 / current_price);
 
       $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (bid_quantity * .0015).toPrecision(9));
-      $('.netTotalBuy').html( (bid_quantity * bid_price * 1.0015).toPrecision(9));
+      $('#buy_fee').html( (0).toPrecision(9));
+      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toPrecision(9));
       $('#buy_margin').html(buy_margin.toPrecision(9));
 
       //alert('test');
@@ -2019,6 +2019,7 @@ $('.inner_content').append(string);
       //total calculation
       total = bid_quantity * bid_price;
       net_total = total * 1.0015;
+      net_total = total;
 
 
       if (net_total > available_balance){
@@ -2047,8 +2048,8 @@ $('.inner_content').append(string);
       buy_margin = parseFloat(buy_margin);
 
       $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (bid_quantity * .0015).toPrecision(9));
-      $('.netTotalBuy').html( (bid_quantity * bid_price * 1.0015).toPrecision(9));
+      $('#buy_fee').html( (0).toPrecision(9));
+      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toPrecision(9));
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -2058,6 +2059,7 @@ $('.inner_content').append(string);
       //total calculation
       total = bid_quantity * bid_price;
       net_total = total * 1.0015;
+      net_total = total;
 
 
       if (net_total > available_balance){
@@ -2093,8 +2095,8 @@ $('.inner_content').append(string);
       sell_margin = margin * (ask_quantity * 10 / current_price);
 
       $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (ask_quantity * .0015).toPrecision(9));
-      $('.netTotalSell').html( (ask_quantity * ask_price * .9985).toPrecision(9));
+      $('#sell_fee').html( (0).toPrecision(9));
+      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toPrecision(9));
       $('#sell_margin').html(sell_margin.toPrecision(9));
 
       //alert('test');
@@ -2103,10 +2105,12 @@ $('.inner_content').append(string);
       withdraw_fee = .01;
 
       fees = ask_quantity * ask_price * .0015;
+      fees = 0;
 
       //total calculation
       total = ask_quantity * ask_price;
       net_total = total * 1.0015;
+      net_total = total * 1;
 
       if (sell_margin + fees > available_balance){
       if ($('#error_message_sell').html().length < 3)
@@ -2127,8 +2131,8 @@ $('.inner_content').append(string);
       //margin calculation tbd
 
       $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (ask_quantity * .0015).toPrecision(9));
-      $('.netTotalSell').html( (ask_quantity * ask_price * 1.0015).toPrecision(9));
+      $('#sell_fee').html( (0).toPrecision(9));
+      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toPrecision(9));
       sell_margin = $('#sell_margin').html();
       sell_margin = sell_margin.substr(1, sell_margin.length);
       sell_margin = parseFloat(sell_margin);
@@ -2140,10 +2144,12 @@ $('.inner_content').append(string);
       withdraw_fee = .01;
 
       fees = ask_quantity * ask_price * .0015;
+      fees = 0;
 
       //total calculation
       total = ask_quantity * ask_price;
       net_total = total * 1.0015;
+      net_total = total;
 
       if (sell_margin + fees > available_balance){
       if ($('#error_message_sell').html().length < 3)
@@ -2259,7 +2265,7 @@ a_string ='<div class="table-responsive"><table class="table table-bordered">\
             <td>'+ data.pending_withdrawals.toPrecision(6)  + '</td>\
           </tr>\
         </tbody>\
-      </table></div>'
+      </table></div><br> *Denotes how much your balance will go down by if all your orders are processed.'
 
 
 yolo ='<table class="table" id="tab_table">\
@@ -2286,7 +2292,7 @@ yolo ='<table class="table" id="tab_table">\
         <td class="tab_td">' + data.available_balance + ' </td>\
         <td class="tab_td">' + data.pending_deposits + ' </td>\
         <td class="tab_td">' + data.pending_withdrawals + ' </td>\
-  </tr></tbody></table>';
+  </tr></tbody></table><br> *Denotes how much your balance will go down by if all your orders are processed.';
 
 
 
@@ -2314,7 +2320,7 @@ Amount to Withdraw\
 Withdraw fee\
 </div>\
 <div class="tab_description">\
-.001 BTC </div>\
+.0001 BTC </div>\
 <div class="tab_header_modified">\
 Net Withdraw amount\
 </div>\

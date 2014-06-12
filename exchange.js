@@ -719,6 +719,400 @@ console.log("processed");
 //for call options only
 
 
+
+app.get('/generate_data', function(req,res){
+
+
+for (var i=0; i<7800; i++){
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+current_time = new Date().getTime();
+low_limit = current_time - (60000 * 60 * 24 * 60);
+
+random = getRandomArbitrary(low_limit, current_time);
+
+bid_quantity = getRandomArbitrary(1,15);
+bid_price = getRandomArbitrary(.05, .25);
+
+
+        order_data = new OrderData({
+                            time: random,
+                            short_symbol: 'BUSD' + (i%78 + 1),
+                            price: bid_price,
+                            quantity: bid_quantity,
+                            initial_margin: .3
+        });
+
+        order_data.save(function(err){
+            console.log('saveed');
+
+        });
+    }
+
+   // });
+
+});
+
+app.get('/make_buy_orders', function(req,res){
+
+
+var counter = 1;
+var i = setInterval(function(){
+    // do your thing
+
+    counter++;
+    if(counter === 780) {
+        clearInterval(i);
+    }
+
+
+
+
+req.session.processing = false;
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+
+//maintenance_margin: buy_margin, bid_quantity: bid_quantity, bid_price: bid_price, short_symbol: contract.short_symbol
+req.body.maintenance_margin = .3;
+
+req.body.bid_quantity = getRandomArbitrary(1,15);
+
+req.body.bid_price = getRandomArbitrary(.0001, .0005);
+
+req.body.short_symbol = 'BUSD' + (counter%77 + 1);
+
+
+console.log(req.body.short_symbol);
+
+//req.session.processing = false;
+console.log('overhere' + req.session._csrf);
+console.log(req.session.processing);
+
+if (req.session.processing == undefined)
+    req.session.processing = false;
+
+if (req.session.processing == false){
+
+
+
+quantity = req.body.bid_quantity;
+price = req.body.bid_price;
+bid_price = parseFloat(price);
+bid_quantity = parseFloat(quantity);
+// maintenance_margin = parseFloat(req.body.maintenance_margin);
+// maintenance_margin = bid_price * bid_quantity;
+// maintenance_margin_multiplier = 1
+//console.log("maintenance margin " + maintenance_margin);
+
+current_price = 660;
+maintenance_margin = .4 * (bid_quantity * 10 / current_price);
+
+
+short_symbol = req.body.short_symbol;
+
+
+Order.find({$and: [{short_symbol: short_symbol}, {side: 'ask'}, {pending: 'pending'}, {price: {$lte: bid_price}}]}).populate('user').sort({price: 1}).exec(function(err, ask){
+
+console.log('ask ' + ask)
+//console.log('sell ordera ' + sell_order);
+//console.log('sell orderb ' + sell_order['user']);
+//coin_name_one = coin_one_ticker + 'coin';
+
+//gets info for user that submitted the post request, and info on the relevant coins he owns
+req.session.user.email = 'i';
+User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function (err, user) {
+
+
+min_order = .00001;
+
+bid_value = bid_price * bid_quantity;
+
+console.log('bid ' + bid_price);
+console.log('quantity ' + bid_quantity);
+console.log('buyvalue ' + bid_value);
+
+user_balance = user.available_balance;
+
+//formula for intiail margin
+initial_margin = 1;
+fees = 0;
+//total cost
+
+if (user_balance >= fees * bid_quantity + bid_value + maintenance_margin ){
+
+if (ask.length == 0 && quantity > min_order){
+
+console.log("it is in here lol");
+
+
+function callback(){}
+user[short_symbol].update({$inc: {balance: bid_quantity}}, { w: 1 }, callback);
+console.log('why user no show  '+ JSON.stringify(user));
+
+
+console.log("maintenance margin " + maintenance_margin);
+console.log('is it a ' + isNaN(maintenance_margin));
+console.log(" down ");
+
+
+//inc_available = parseFloat(fees) * parseFloat(bid_quantity) + parseFloat(bid_value) + parseFloat(maintenance_margin);
+inc_available = -1 * (fees * bid_quantity + bid_value + maintenance_margin);
+console.log(inc_available);
+
+req.session.user.email = 'i';
+User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: maintenance_margin, in_orders_non_margin: -1 * bid_value}},function(err, user){
+
+order = new Order({
+                time: new Date().getTime(),
+                option_type: 'call',
+                short_symbol: short_symbol,
+                side: 'bid',
+                price: price,
+                quantity: quantity,
+                quantity_original: quantity,
+                quantity_left: quantity,
+                initial_margin: maintenance_margin,
+                buyer: user, 
+                pending: 'pending'
+});
+
+
+order.btc_prices.push(current_price);
+
+user.orders.push(order);
+
+
+user.save(function(err){
+
+});
+
+
+order.save(function(err){
+
+console.log('order saved');
+
+});
+
+
+
+req.session.processing = false;
+res.end(JSON.stringify('done'));
+
+//console.log(req.session.processing);
+
+
+
+
+
+});
+
+
+}
+
+
+
+
+}
+});
+
+
+//});
+
+  //console.log(trades.last);  
+});
+
+}
+
+    
+}, 100);
+
+//}
+
+
+
+});
+
+
+
+app.get('/make_ask', function(req,res){
+
+var counter = 1;
+var i = setInterval(function(){
+    // do your thing
+
+    counter++;
+    if(counter === 780) {
+        clearInterval(i);
+    }
+
+
+
+
+req.session.processing = false;
+
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+
+//maintenance_margin: buy_margin, bid_quantity: bid_quantity, bid_price: bid_price, short_symbol: contract.short_symbol
+req.body.maintenance_margin = .3;
+
+req.body.ask_quantity = getRandomArbitrary(.001,.005);
+
+req.body.ask_price = getRandomArbitrary(1, 3);
+
+req.body.short_symbol = 'BUSD' + (counter%77 + 1);
+
+
+
+
+//req.session.processing = false;
+console.log('overhere' + req.session._csrf);
+console.log(req.session.processing_sell);
+
+if (req.session.processing_sell == undefined)
+    req.session.processing_sell = false;
+
+if (req.session.processing_sell== false){
+req.session.processing_sell = true;
+
+
+quantity = req.body.ask_quantity;
+price = req.body.ask_price;
+ask_price = parseFloat(price);
+ask_quantity = parseFloat(quantity);
+// maintenance_margin = parseFloat(req.body.maintenance_margin);
+// maintenance_margin = ask_price * ask_quantity;
+
+//bitstamp.ticker(function(err, trades) {
+ maintenance_margin_multiplier = .4
+current_price = 650;
+maintenance_margin = .4 * (ask_quantity * 10 / current_price);
+
+console.log("maintenance margin " + maintenance_margin);
+
+short_symbol = req.body.short_symbol;
+
+
+Order.find({$and: [{short_symbol: short_symbol}, {side: 'bid'}, {pending: 'pending'}, {price: {$gte: ask_price}}]}).populate('user').sort({price: -1}).exec(function(err, bid){
+
+console.log('bid ' + bid)
+//console.log('sell ordera ' + sell_order);
+//console.log('sell orderb ' + sell_order['user']);
+//coin_name_one = coin_one_ticker + 'coin';
+
+//gets info for user that submitted the post request, and info on the relevant coins he owns
+User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function (err, user) {
+
+
+min_order = .00001;
+
+contract_balance = user[short_symbol].balance;
+initial_margin = user[short_symbol].initial_margin;
+ask_value = ask_price * ask_quantity;
+
+console.log('bid ' + ask_price);
+console.log('quantity ' + ask_quantity);
+console.log('buyvalue ' + ask_value);
+
+user_balance = user.available_balance;
+
+//formula for intiail margin
+initial_margin = 1;
+fees = .001;
+fees = 0;
+
+//total cost
+
+if (user_balance >= fees * ask_quantity + ask_value + maintenance_margin){
+
+if (bid.length == 0 && quantity > min_order){
+
+console.log("it is in here lol");
+
+function callback(){}
+user[short_symbol].update({$inc: {balance: -1 * ask_quantity}}, { w: 1 }, callback);
+
+//User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: bid_value}},function(err, user){
+// inc_available = -1 * (fees * bid_quantity + maintenance_margin);
+// console.log(inc_available);
+
+
+User.findOneAndUpdate({email: req.session.user.email}, {$inc: {in_orders_non_margin: ask_value, in_orders: maintenance_margin, balance: -1 * fees * ask_quantity, available_balance: -1 * (fees * ask_quantity + maintenance_margin), maintenance_margin: maintenance_margin}},function(err, user){
+
+order = new Order({
+                time: new Date().getTime(),
+                option_type: 'call',
+                short_symbol: short_symbol,
+                side: 'ask',
+                price: price,
+                quantity_original: quantity,
+                quantity: quantity,
+                quantity_left: quantity,
+                seller: user,
+                pending: 'pending',
+                initial_margin: maintenance_margin
+});
+order.btc_prices.push(current_price);
+
+user.orders.push(order);
+
+
+user.save(function(err){
+
+});
+
+
+order.save(function(err){
+
+console.log('order saved');
+
+});
+
+
+
+req.session.processing_sell = false;
+res.end(JSON.stringify('done'));
+
+//console.log(req.session.processing);
+
+
+
+
+
+});
+
+
+}
+
+
+
+
+}
+});
+
+
+});
+
+//});
+
+}
+
+}, 100);
+
+
+});
+
+
+
+
+
 app.post('/buy_order',  csrf, function(req,res){
 //req.session.processing = false;
 console.log('overhere' + req.session._csrf);
@@ -773,7 +1167,7 @@ user_balance = user.available_balance;
 //formula for intiail margin
 initial_margin = 1;
 fees = .001;
-
+fees = 0;
 //total cost
 
 if (user_balance >= fees * bid_quantity + bid_value + maintenance_margin ){
@@ -1198,6 +1592,7 @@ user_balance = user.available_balance;
 //formula for intiail margin
 initial_margin = 1;
 fees = .001;
+fees = 0;
 
 //total cost
 
@@ -1445,6 +1840,7 @@ if (!complete ){
         if (key == bid.length -1 ){
 
             fees = .001;
+            fees = 0;
             fee_total = fees * ask_quantity;
             in_orders_non_margin = ask_quantity_left * ask_price;
             in_orders =  maintenance_margin_multiplier *  (ask_quantity_left * 10 / current_price);;
@@ -2714,6 +3110,25 @@ res.render('about.html', {activated: activated, user: JSON.stringify(user) });
 
 });
 
+
+app.get('/faq', function(req,res){
+
+activated = req.session.activated;
+user = req.session.user;
+
+//console.log(activated);
+if (activated == undefined) 
+    activated = false;
+
+console.log(activated);
+console.log(user);
+res.render('faq.html', {activated: activated, user: JSON.stringify(user) });
+
+});
+
+
+
+
 app.get('/trading', function(req,res){
 
 
@@ -3122,7 +3537,7 @@ console.log(req.body.password);
 console.log(req.body.email);
 amount = req.body.amount;
 address = req.body.address;
-fee = .001;
+fee = .0001;
 
 User.findOne({$and:[{email: req.body.email}, {password: req.body.password}]}, function(err, populated){
 
