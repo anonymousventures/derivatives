@@ -81,10 +81,27 @@ margin-right: 30px;
 }
 
 .index_col_container{
-  max-width:400px;
+  //max-width:700px;
   text-align: center;
   margin-left: auto;
   margin-right: auto;
+  padding: 30px;
+}
+
+
+#footer {
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 60px;
+    //margin-top: -3em;
+    color: black;
+    text-align: center;
+    font-size:20px;
+    line-height: 60px;
+    font-weight: bold;
+    vertical-align: center;
+    background-color: #e7e7e7;
 }
 
 #middle_area{
@@ -93,8 +110,8 @@ margin-right: 30px;
 }
 
 .bottom_col{
-  margin-top:15px;
-  margin-bottom: 15px;
+  margin-top:25px;
+  margin-bottom: 25px;
 }
 
 #index_top_header{
@@ -109,7 +126,7 @@ margin-right: 30px;
 }
 
 .live_trades{
-  max-width: 400px;
+  //max-width: 500px;
 }
 
 .index_icon{
@@ -244,6 +261,12 @@ font-size: 18px;
 .tab_td_order{
     height: 50px;
     vertical-align: middle !important
+}
+
+.index_td{
+    height: 50px;
+    vertical-align: middle !important;
+    text-align: left;
 }
 
 .contract_table{

@@ -50,7 +50,7 @@ var bitstamp = new Bitstamp;
 
         var conditionalCSRF = function (req, res, next) {
           //compute needCSRF here as appropriate based on req.path or whatever
-          if ( req.path.indexOf('buy_order')!= -1  || req.path.indexOf('ask')!= -1 ) {
+          if ( req.path.indexOf('buy_order')!= -1  || req.path.indexOf('ask')!= -1 || req.path.indexOf('change_password')!= -1 || req.path.indexOf('exercise')!= -1 || req.path.indexOf('cancel_order')!= -1) {
             csrf(req, res, next);
           } else {
             next();
@@ -142,6 +142,7 @@ var User = new mongoose.Schema({
     in_positions: { type: Number, default: 0},
     in_orders: { type: Number, default: 0},
     in_orders_non_margin: { type: Number, default: 0},
+    login_attempts: [Number],
     BUSD1: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
 BUSD2: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
 BUSD3: { type: mongoose.Schema.ObjectId, ref: 'Contract' },
@@ -345,6 +346,12 @@ res.render('login.html');
 
 });
 
+app.get('/forgot', function(req,res){
+
+res.render('forgot.html');
+
+});
+
 
 app.get('/market/:short_symbol', csrf, function(req,res){
 
@@ -511,6 +518,13 @@ res.render('trade.html', {user: JSON.stringify(user),last_bitstamp: ticker.last,
 });
 
 }
+else{
+
+res.redirect(prefix + 'login');
+
+}
+
+
 
 });
 
@@ -1956,14 +1970,23 @@ else{
 });
 
 
-app.post('/login', function(req,res){
+app.post('/logout', function(req,res){
+
+
+delete req.session;
+
+res.end('done');
+
+
+});
+
+
+
+app.post('/forgot', function(req,res){
 
 email = req.body.email;
-password = req.body.password;
 
-User.findOne({$and: [{email: email}, {password: password}]}, function(err, user){
-
-
+User.findOne({email: email}, function(err, user){
 if (user == null)
 res.end('incorrect');
 
@@ -1975,8 +1998,25 @@ object.email = user.email;
 object.full_name = user.full_name;
 object.user_id = user._id;
 
-req.session.activated = true;
-req.session.user = object;
+string = 'Hello! \r\n Your password is: \r\n\r\n ' + user.password;
+
+html = '<p>Hello,<br/>\
+    Your password is:<br/>\
+    <strong>' + user.password + '</strong></p>';
+
+
+sendgrid.send({
+  to:       req.body.email,
+  from:     'info@GenesisBlock.io',
+  subject:  'GenesisBlock - Password Reminder',
+  text:     string,
+  html: html
+}, function(err, json) {
+
+  if (err) { return console.error(err); }
+});
+
+
 
 res.end(JSON.stringify(user));
 
@@ -1985,6 +2025,102 @@ res.end(JSON.stringify(user));
 else {
 console.log('c');
     res.end('unactivated');
+}
+
+
+});
+
+});
+
+
+app.post('/change_password', csrf, function(req,res){
+new_pass = req.body.password;
+
+
+
+if (req.session.activated && req.session.user.email == req.body.email){
+
+User.findOneAndUpdate({email: email},{$set: {password: new_pass}},function(err, user){
+
+console.log("password updated");
+res.end('done');
+
+});
+
+
+}
+
+});
+
+app.post('/login', function(req,res){
+
+email = req.body.email;
+password = req.body.password;
+
+User.findOne({email: email}, function(err, user){
+
+if (user.activated == false){
+
+    res.end('Not activated yet. Please search both inbox and spam for activation email');
+
+}
+else{
+
+current_time = new Date().getTime();
+count = 0;
+
+if (user.login_attempts.length > 7 ){
+
+index = user.login_attempts.length - 6;
+subarray = user.login_attempts.slice(index);
+
+$.each(subarray, function(key,val){
+
+if (current_time - val < 120000)
+    count++;
+
+});
+
+
+}
+
+
+
+if (count < 5  && user.password == req.body.password){
+
+object = new Object();
+object.email = user.email;
+object.full_name = user.full_name;
+object.user_id = user._id;
+
+req.session.activated = true;
+req.session.user = object;
+
+res.end('correct');
+
+}
+else if (count < 5 && user.password != req.body.password){
+
+user.login_attempts.push(current_time);
+user.save(function(err){
+console.log("updated");
+});
+
+res.end('Incorrect Password!');
+
+}
+else if (count >= 5 && user.password == req.body.password){
+
+res.end('You tried to login more than 5 times in the past 2 minutes. Please wait 2 minutes and try again.');
+
+}
+else if (count >= 5 && user.password != req.body.password){
+
+res.end('You tried to login more than 5 times in the past 2 minutes. Please wait 2 minutes and try again.');
+
+}
+
+
 }
 
 
@@ -2339,7 +2475,7 @@ User
 });
 
 
-app.get('/exercise_option', function(req,res){
+app.get('/exercise_option', csrf, function(req,res){
 
 
 
@@ -2374,7 +2510,7 @@ console.log(val);
 });
 
 
-app.get('/balances', function(req,res){
+app.get('/balances', csrf,  function(req,res){
 console.log('here');
 if (req.session.activated ){
 console.log('here');
@@ -2404,7 +2540,7 @@ Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc
                 console.log(keyb);
                 if (keyb == data.orders.length -1){
                     console.log('the orders ' + orders_populated);
-                    res.render('tab_template.html', {data: JSON.stringify(data), orders_populated: JSON.stringify(orders_populated)});
+                    res.render('tab_template.html', {csrf: JSON.stringify(req.session._csrf), data: JSON.stringify(data), orders_populated: JSON.stringify(orders_populated)});
 
 
                 }
@@ -2417,7 +2553,7 @@ else{
 
     console.log("fucked");
     console.log(data);
-res.render('tab_template.html', {data: JSON.stringify(data), orders_populated: JSON.stringify(null)});
+res.render('tab_template.html', {csrf: JSON.stringify(req.session._csrf), data: JSON.stringify(data), orders_populated: JSON.stringify(null)});
 
 
 }
@@ -2473,12 +2609,26 @@ activated = req.session.activated;
 user = req.session.user;
 
 //console.log(activated);
-if (activated == undefined) 
+if (activated == undefined){
     activated = false;
+    user = false;
+}
+
+
 
 console.log(activated);
 console.log(user);
-res.render('index_exchange.html', {activated: activated, user: JSON.stringify(user) });
+
+OrderData.find({}).sort('-time').limit(5).exec(function(err, orderdata){
+Order.find({$and: [{pending: 'pending'}, {side: 'bid'}]}).sort('-time').limit(5).exec(function(err, bids){
+Order.find({$and: [{pending: 'pending'}, {side: 'ask'}]}).sort('-time').limit(5).exec(function(err, asks){
+
+res.render('index_exchange.html', {activated: JSON.stringify(activated), user: JSON.stringify(user),asks: JSON.stringify(asks),bids: JSON.stringify(bids), orderdata: JSON.stringify(orderdata)});
+
+
+});
+});
+});
 
 
 });
@@ -2572,11 +2722,11 @@ activated = req.session.activated;
 user = req.session.user;
 
 console.log(activated);
-if (activated == undefined) 
+if (activated == undefined){
     activated = false;
+    user = null;
+}
 
-console.log(activated);
-console.log(user);
 ContractRef.find({}).sort({contract_number: 1}).exec(function(err, contracts){
 //console.log(contracts);
 
@@ -2590,7 +2740,7 @@ $.each(contracts, function(key,val){
 //sub = $.parseJSON(contracts[key]);
 //console.log(contracts[key].short_symbol);
 short_symbol = val.short_symbol;
-(function(val, short_symbol, key, current_price){
+(function(val, short_symbol, key, current_price, activated, user){
     //console.log(short_symbol);
 Order.findOne({$and: [{short_symbol: short_symbol}, {pending: 'pending'}, {side: 'bid'}]}).sort('-price').limit(1).exec(function(err, bid){
 Order.findOne({$and: [{short_symbol: short_symbol}, {pending: 'pending'}, {side: 'ask'}]}).sort('-price').limit(1).exec(function(err, ask){
@@ -2687,9 +2837,16 @@ contracts_modified = contracts_modified.sort(sortByGroup);
 
 console.log(JSON.stringify(contracts_modified));
 
+activated = req.session.activated;
+user = req.session.user;
 
+console.log(activated);
+if (activated == undefined){
+    activated = false;
+    user = null;
+}
 
-res.render('trading.html', {activated: activated, user: JSON.stringify(user), contracts: JSON.stringify(contracts_modified)});
+res.render('trading.html', {activated: JSON.stringify(activated), user: JSON.stringify(user), contracts: JSON.stringify(contracts_modified)});
 }
 
 
@@ -2823,10 +2980,24 @@ app.post('/cancel_order', function(req,res){
 
 console.log(req.body.order_id);
 
-Order.findByIdAndUpdate(req.body.order_id, {$set: {pending: 'cancelled'}}, function(err, order){
+
+
+Order.findByIdAndUpdate(req.body.order_id, {$set: {pending: 'cancelled'}}).populate('buyer seller').exec(function(err, order){
+
+console.log(order);
+
+function callback(){}
+
+if (order.side == 'bid')
+order.buyer.update({$inc: {maintenance_margin: -1 * order.initial_margin, in_orders: -1 * order.initial_margin , in_orders_non_margin: order.price * order.quantity, available_balance: order.initial_margin + (order.price * order.quantity)}}, { w: 1 }, callback);
+else if (order.side == 'ask')
+order.seller.update({$inc: {maintenance_margin: -1 * order.initial_margin, in_orders: -1 * order.initial_margin , in_orders_non_margin: -1 * order.price * order.quantity, available_balance: order.initial_margin}}, { w: 1 }, callback);
+
 
 console.log("order cancelled");
 res.end("done");
+
+
 });
 
 

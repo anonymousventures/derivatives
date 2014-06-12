@@ -77,7 +77,6 @@
         <li class="active" style="margin-left: 30px"><a href="#">Link</a></li>
         -->
         <li><a  href="trading">Trading</a></li>
-        <li ><a href="voting">Voting</a></li>
         <li><a href="fees">Fees</a></li>
         <li><a href="about">About</a></li>
         <li><a href="support">Support</a></li>  
@@ -129,15 +128,64 @@
   </td>
   </tr>
 
-
-
 </table>
+<a href="forgot" style="color: black; text-decoration: underline">Forgot Password?</a><br><br>
 
  <button type="button" class="btn btn-default" id="login_button">Login</button>
 
 
 </div>
 </div>
+<script type="text/javascript">
+  
+  /*
+if (document.URL.indexOf('localhost') != -1 )
+  prefix = 'http://localhost:8080/';
+else
+  prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
 
+
+$('#login_button').click(function(){
+
+email = $('#email').val();
+password = $('#password').val();
+
+if ( email.length == 0 || password.length == 0 )
+  alert('Please make sure you filled out all values in the form');
+
+else {
+
+
+$.ajax({
+  url: "/login",
+  type: "POST",
+  data: { email: email, password: password},
+  dataType: "html"
+}).done(function(data){
+
+if (data == 'incorrect')
+  alert("Incorrect username or password");
+else if (data == 'unactivated')
+  alert("User has not been activated yet. Please check email");
+else{
+  alert("yolo");
+localStorage.setItem('email', email);
+//alert(localStorage.getItem('email'));
+alert(prefix);
+//alert(data)
+window.location = prefix;
+}
+
+});
+
+}
+
+
+
+});
+*/
+
+
+</script>
 </body>
 </html>

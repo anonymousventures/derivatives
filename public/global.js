@@ -14,20 +14,119 @@ if (activated){
 string = '<li class="dropdown">\
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Logged in as  ' + user.full_name + '<b class="caret"></b></a>\
           <ul class="dropdown-menu">\
-            <li><a href="profile">Profile</a></li>\
+            <li><a href="' + prefix + 'balances#taba1">Profile</a></li>\
             <li><a href="' + prefix + 'balances#taba">Balances</a></li>\
             <li><a href="' + prefix + 'balances#tabd">Deposits</a></li>\
             <li><a href="' + prefix + 'balances#tabe">Withdrawals</a></li>\
             <li><a href="' + prefix + 'balances#tabf">Orders</a></li>\
             <li><a href="' + prefix + 'balances#tabg">Trade History</a></li>\
             <li><a href="' + prefix + 'balances#tabh">Exercise Options</a></li>\
-            <li><a href="logout">Logout</a></li>\
+            <li><a class="logout_click">Logout</a></li>\
           </ul>\
         </li>';
 
 $('#right_bar').append(string);
 
 }
+}
+
+
+if (document.URL == prefix){ 
+
+string = '<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">\
+<div class="index_col_container">\
+<h2 class="bottom_col">Live Trades </h2>\
+    <table class="table table-bordered live_trades"  style="margin-bottom:50px">\
+        <thead>\
+          <tr>\
+            <th>Time </th>\
+            <th>Option Symbol</th>\
+            <th>Amount</th>\
+            <th>Price</th>\
+          </tr>\
+        </thead><tbody>';
+
+$.each(orderdata, function(key,val){
+
+time = format_time(val.time);
+
+substring = '<tr id="tab_row" style="margin-bottom: 30px">\
+        <td class="index_td">' + time + '</td>\
+        <td class="index_td">' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="index_td">' + val.quantity.toPrecision(5) + '</td>\
+        <td class="index_td">' + val.price.toPrecision(5) + '</td>\
+</tr>';
+
+string += substring;
+
+});
+
+      
+string += '</tbody></table>\
+</div>\
+</div>\
+<div class="index_col_container">\
+<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">\
+<h2 class="bottom_col">Live OrderBook </h2>\
+<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">\
+    <table class="table table-bordered live_trades"  style="margin-bottom:50px">\
+        <thead >\
+          <tr>\
+            <th style="border-right: 1px solid #eee">Bids</th>\
+            <th style="border-right: 1px solid #eee"></th>\
+            <th></th>\
+          </tr>\
+        </thead><tbody>';
+
+
+$.each(bids, function(key,val){
+
+substring = '<tr id="tab_row" style="margin-bottom: 30px">\
+        <td class="index_td" >' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="index_td" >' + val.quantity.toPrecision(5) + '</td>\
+        <td class="index_td">' + val.price.toPrecision(5) + '</td>\
+</tr>';
+
+string += substring;
+
+
+});
+
+
+string += '</tbody></table></div>\
+<div class="index_col col-md-6 col-lg-6 col-sm-6 col-xs-6">\
+    <table class="table table-bordered live_trades"  style="margin-bottom:50px">\
+        <thead >\
+          <tr>\
+            <th style="border-right: 1px solid #eee">Asks</th>\
+            <th style="border-right: 1px solid #eee"></th>\
+            <th></th>\
+          </tr>\
+        </thead><tbody>';
+
+
+$.each(asks, function(key,val){
+
+substring = '<tr id="tab_row" style="margin-bottom: 30px">\
+        <td class="index_td" >' + val.short_symbol.toUpperCase() + '</td>\
+        <td class="index_td" >' + val.quantity.toPrecision(5) + '</td>\
+        <td class="index_td">' + val.price.toPrecision(5) + '</td>\
+</tr>';
+
+string += substring;
+
+
+});
+
+
+
+string += '</tbody></table></div>\
+</div>';
+
+$('#bottom_area').append(string);
+
+
+
 }
 
 
@@ -176,7 +275,7 @@ alert('Your activation link has been sent to: ' + email );
 
 $('#login_button').click(function(){
 
-alert("ah");
+
 email = $('#email').val();
 password = $('#password').val();
 
@@ -193,18 +292,15 @@ $.ajax({
   dataType: "html"
 }).done(function(data){
 
-if (data == 'incorrect')
-  alert("Incorrect username or password");
-else if (data == 'unactivated')
-  alert("User has not been activated yet. Please check email");
-else{
-  alert("yolo");
+if (data == 'correct'){
+  //alert("yolo");
 localStorage.setItem('email', email);
 //alert(localStorage.getItem('email'));
 
 //alert(data);
 window.location = prefix;
 }
+else alert(data);
 
 });
 
@@ -217,6 +313,59 @@ window.location = prefix;
 
 
 
+
+$('#forgot_button').click(function(){
+
+
+email = $('#email').val();
+
+if ( email.length == 0 )
+  alert('Please make sure you filled out your email address!');
+else {
+
+
+$.ajax({
+  url: "/forgot",
+  type: "POST",
+  data: { email: email},
+  dataType: "html"
+}).done(function(data){
+
+if (data == 'incorrect')
+  alert("Account with email address does not exist");
+else if (data == 'unactivated')
+  alert("User has not been activated yet. Please check email for activation link");
+else{
+  alert("Email reminder sent");
+
+}
+
+});
+
+}
+
+
+
+});
+
+
+$('.logout_click').click(function(){
+
+$.ajax({
+  url: "/logout",
+  type: "POST",
+  data: '',
+  dataType: "html"
+}).done(function(data){
+
+  window.location = prefix;
+
+});
+
+
+
+
+});
 
 
 
@@ -649,10 +798,7 @@ function generate_withdrawals(){
 
 //alert(deposits);
 
-    string = '<div class="tab_header">\
-Coin Withdrawals\
-</div>\
-<div class="tab_description">\
+    string = '<div class="tab_description">\
 Below is a list of withdrawals that you have made. \
 Click the expander icon on the left of each row to reveal more details about the withdrawal. <br><br>\
 To make a new withdrawal, please visit the Balances page and select the Withdraw option under the actions menu for the coin. \
@@ -985,7 +1131,7 @@ string += substring;
 
 string += '</tbody></table>'; 
 
-//alert(string);
+
 
 return string;
 
@@ -1056,6 +1202,31 @@ return string;
 
 
 
+
+
+
+function generate_profile(){
+
+string = '<h4>Change Password </h4><br> You can change your password using the form below. Only enter a new password if you wish to change it.<br>\
+<br><div style="max-width:500px"><table class="table table-bordered">\
+        <tbody>\
+          <tr>\
+            <td class="col-md-3" style="background: #eee">Password</td>\
+            <td><input style="width: 100%" id="change_pass" type="password"></td></tr>\
+                      <tr>\
+            <td style="background: #eee" > Confirm Password</td>\
+            <td><input style="width: 100%" id="confirm_change_pass"  type="password"></td></tr>\
+            </tbody></table><button type="button" class="btn btn-default" id="change_password">Change Password</button></div>';
+
+return string;
+
+
+}
+
+
+
+
+
 function generate_orders(){
 
     $('#orders_li').attr('class', 'active');
@@ -1067,10 +1238,7 @@ function generate_orders(){
 //alert(deposits);
 
 
-    string = '<div class="tab_header">\
-Open Orders\
-</div>\
-<div class="tab_description">\
+    string = '<div class="tab_description">\
 Below is a list of orders that you have made. \
 Any completed orders will show up under trade history. <br><br>\
 Displaying orders 1 - ' + orders.length + ' of ' + orders.length +
@@ -1101,7 +1269,9 @@ $.each(orders, function(key,val){
 "user" : ObjectId("5377ff1015a0a90000000001"), "_id" : ObjectId("537a9c8cec45c0b264000001"), "pending" : "pending"
 */
 
-if ( (val.pending == 'pending' || val.pending == 'complete') && val.quantity_left != 0){
+if (val.pending == 'pending'){
+
+//if ( (val.pending == 'pending' || val.pending == 'complete') && val.quantity_left != 0){
 
   console.log(val);
 if (val.side == 'ask')
@@ -1149,10 +1319,6 @@ string += '</tbody></table>';
 return string;
 
 
-
-
-
-
 }
 
 
@@ -1176,10 +1342,7 @@ else if (val.pending == 'pending' && (val.quantity != val.quantity_left))
 
 
 
-    string = '<div class="tab_header">\
-Open Orders\
-</div>\
-<div class="tab_description">\
+    string = '<div class="tab_description">\
 Below is a list of completed orders that you have made. \
 Any pending orders will show up under \'Your Orders\'. <br><br>\
 Displaying orders 1 - ' + length + ' of ' + length +
@@ -1312,10 +1475,10 @@ string += '</tbody></table>';
 //second part of table
 
     string += '<div class="tab_header">\
-Open Orders\
+Variation Margin\
 </div>\
 <div class="tab_description">\
-Below is a list of completed orders that you have made. \
+Below is a list of variation margin changes to the completed orders that you have made. \
 Any pending orders will show up under \'Your Orders\'. <br><br>\
 Displaying orders 1 - ' + length + ' of ' + length +
 '</div>\
@@ -1602,7 +1765,7 @@ order_id = $(this).attr('order_id');
       $.ajax({
         url: "/cancel_order",
         type: "POST",
-        data: {order_id: order_id},
+        data: {order_id: order_id, _csrf: csrf},
         dataType: "html"
       }).done(function(data){
 
@@ -2216,8 +2379,12 @@ e_string = generate_withdrawals();
 f_string = generate_orders();
 g_string = generate_trade_history();
 h_string = generate_exercise_options();
+a1_string = generate_profile();
+
+
 
 string = '<ul class="nav nav-pills nav-stacked " id="nav_pills" style="margin-top: 30px">\
+  <li class="" id="your_funds"><a href="#your_profile_tab" data-toggle="pill" class="top_href" >Your Profile</a></li>\
   <li class="" id="your_funds"><a href="#your_funds_tab" data-toggle="pill" class="top_href" >Your Funds</a></li>\
   <li class="" id="add_funds"><a href="#add_funds_tab" data-toggle="pill" class="top_href">Add Funds</a></li>\
   <li class="" id="withdraw_funds"><a href="#withdraw_funds_tab" data-toggle="tab" class="top_href">Withdraw Funds</a></li>\
@@ -2228,22 +2395,24 @@ string = '<ul class="nav nav-pills nav-stacked " id="nav_pills" style="margin-to
   <li class="" id="your_options"><a href="#your_exercise_options_tab" data-toggle="tab" class="top_href">Exercise Options</a></li>\
 </ul>\
 <div class="tab-content col-md-10">\
+        <div class="tab-pane tab_add" id="your_profile_tab">\
+             <h3>Your Profile</h3><br>' + a1_string + '</div>\
         <div class="tab-pane tab_add" id="your_funds_tab">\
              <h3>Your Funds</h3><br>' + a_string + '</div>\
         <div class="tab-pane tab_add" id="add_funds_tab">\
              <h3>Add Funds</h3><br>' + b_string + '</div>\
         <div class="tab-pane tab_add" id="withdraw_funds_tab">\
-             <h3>Withdraw Funds</h3><br>' + c_string + '</div>\
+             <h3>Withdraw Funds</h3>' + c_string + '</div>\
         <div class="tab-pane tab_add" id="your_deposits_tab">\
-             <h3>Your Deposits</h3><br>' + d_string + '</div>\
+             <h3>Your Deposits</h3>' + d_string + '</div>\
         <div class="tab-pane tab_add" id="your_withdrawals_tab">\
-             <h3>Your Withdrawals</h3><br>' + e_string + '</div>\
+             <h3>Your Withdrawals</h3>' + e_string + '</div>\
         <div class="tab-pane tab_add" id="your_orders_tab">\
-             <h3>Your Orders</h3><br>' + f_string + '</div>\
+             <h3>Your Orders</h3>' + f_string + '</div>\
         <div class="tab-pane tab_add" id="your_trade_history_tab">\
-             <h3>Your Trade History</h3><br>' + g_string + '</div>\
+             <h3>Your Trade History</h3>' + g_string + '</div>\
         <div class="tab-pane tab_add" id="your_exercise_options_tab">\
-             <h3>Exercise Options</h3><br>' + h_string + '</div>\
+             <h3>Exercise Options</h3>' + h_string + '</div>\
 </div>';
 
 
@@ -2262,11 +2431,30 @@ string = '<li class="dropdown">\
             <li><a  style="cursor:pointer;" id="orders_a">Orders</a></li>\
             <li><a  style="cursor:pointer;" id="trade_history_a">Trade History</a></li>\
             <li><a  style="cursor:pointer;" id="exercise_options_a">Exercise Options</a></li>\
-            <li><a  style="cursor:pointer;" id="logout_a">Logout</a></li>\
+            <li><a class="logout_click">Logout</a></li>\
           </ul>\
         </li>';
 
 $('#right_bar').append(string);
+
+$('.logout_click').click(function(){
+
+$.ajax({
+  url: "/logout",
+  type: "POST",
+  data: '',
+  dataType: "html"
+}).done(function(data){
+
+  window.location = prefix;
+
+});
+
+
+
+
+});
+
 
 
 $('#balances_a').click(function(event){
@@ -2303,14 +2491,22 @@ $('#exercise_options_a').click(function(event){
     $("[href='#your_exercise_options_tab']").click();
   }             
 );
+$('#profile_a').click(function(event){
+    $("[href='#your_profile_tab']").click();
+  }             
+);
 
 
 url = document.URL;
 ending = url.substr(url.indexOf('#') + 1, url.length);
 
 
-if (ending == 'taba' || ending == prefix + 'balances'){
+if (ending == 'taba1' || ending == prefix + 'balances'){
   //alert($("[href='#your_funds_tab']").attr('href'));
+$("[href='#your_profile_tab']").click();
+}
+else if (ending == 'taba'){
+  //alert('hi');
 $("[href='#your_funds_tab']").click();
 }
 else if (ending == 'tabb'){
@@ -2608,7 +2804,7 @@ order_id = $(this).attr('order_id');
       $.ajax({
         url: "/cancel_order",
         type: "POST",
-        data: {order_id: order_id},
+        data: {order_id: order_id, _csrf: csrf},
         dataType: "html"
       }).done(function(data){
 
@@ -2632,7 +2828,7 @@ order_id = $(this).attr('order_id');
       $.ajax({
         url: "/exercise_option",
         type: "POST",
-        data: {order_id: order_id},
+        data: {order_id: order_id, _csrf: csrf},
         dataType: "html"
       }).done(function(data){
 
@@ -2642,6 +2838,36 @@ order_id = $(this).attr('order_id');
       });
 
     });
+
+
+$('#change_password').click(function(){
+
+
+password = $('#change_pass').val();
+confirm = $('#confirm_change_pass').val();
+email = localStorage.getItem('email');
+if ( password != confirm)
+  alert('Please make sure that the passwords are the same!');
+
+else {
+
+
+$.ajax({
+  url: "/change_password",
+  type: "POST",
+  data: {email: email, password: password, _csrf: csrf},
+  dataType: "html"
+}).done(function(data){
+
+alert('Password changed!');
+
+});
+
+}
+
+
+
+});
 
 
   }
