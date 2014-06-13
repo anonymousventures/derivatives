@@ -316,8 +316,13 @@ var bitcoin_client = new bitcoin.Client({
 });
 
 
+var ip = require("ip");
+console.dir ( ip.address() );
 
-prefix = 'http://localhost:8080/';
+if ( ip.address() == '172.31.2.194')
+    prefix = 'http://genesisblock.io/'
+else
+    prefix = 'http://localhost:8080/';
 //prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
 
 var io = require('socket.io').listen(server);
@@ -330,8 +335,7 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
-var ip = require("ip");
-console.dir ( ip.address() );
+
 
 
 
