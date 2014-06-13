@@ -330,7 +330,8 @@ io.sockets.on('connection', function (socket) {
   });
 });
 
-
+var ip = require("ip");
+console.dir ( ip.address() );
 
 
 
