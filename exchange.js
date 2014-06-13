@@ -615,7 +615,7 @@ Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin}});
 app.get('/process_variation', function(req,res){
 
 console.log('ugh');
-
+bitstamp.ticker(function(err, trades) {
 //get all orders that have some amount in positions
 Order.find({$and: [{pending: {'$ne': 'cancelled' }}, {pending: {'$ne': 'expired' }}, {pending: {'$ne': 'exercised' }} ]}).populate('buyer seller').exec(function(err, orders){
 
@@ -623,19 +623,23 @@ $.each(orders, function(key,val){
 in_positions = val.quantity - val.quantity_left;
 if (in_positions > 0){
 
-//console.log("the order ");
+//console.log("the order ");f
 //console.log(val);
 
 //calculate variation margin
 (function(val, in_positions){
-bitstamp.ticker(function(err, trades) {
+
 current_price = parseFloat(trades.last);
 last_index = val.btc_prices.length -1;
 last_price = val.btc_prices[last_index];
 
 console.log("current priceb " + current_price);
 //current_price = 800;
-variation = 10/ ((current_price - last_price)* last_price ) * in_positions;
+
+
+
+variation = (current_price - last_price ) / last_price * 10 / last_price * in_positions; 
+//variation = 10/ ((current_price - last_price)* last_price ) * in_positions;
 console.log('the val ' + key + ' ' + last_price);
 console.log('current price ' + key + ' ' + current_price); 
 console.log('last price ' + key + ' ' + last_price); 
@@ -700,7 +704,7 @@ Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin, $i
 
 }
 
-});
+//});
 }(val, in_positions));
 
 
@@ -715,7 +719,7 @@ Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin, $i
 });
 
 
-
+});
 
 console.log("processed");
 
@@ -2881,13 +2885,14 @@ process.on('uncaughtException', function (e) {
   process.exit(1);
 });
 
+/*
 var log = console.log;
 
 console.log = function(){
 date = new Date();
 
   log.apply(console, [date.toString() + ' ' + date.getTime() ].concat(arguments));
-};
+};*/
 
 
 
@@ -2970,7 +2975,10 @@ $.each(data.orders, function(keyb, valb){
 //console.log('here ' + keyb + ' ' + valb.variation_margin);
 
 
-Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc) {
+Order.find({_id: valb._id}).populate({path: 'variation_margin',
+  match: { amount: { $ne: Infinity }},
+  //options: { limit: 5 }
+  }).exec(function( err, doc) {
 
     console.log("aha");
                 //res.json(doc);
@@ -2978,7 +2986,7 @@ Order.find({_id: valb._id}).populate('variation_margin').exec(function( err, doc
                 orders_populated.push(doc);
                 console.log(keyb);
                 if (keyb == data.orders.length -1){
-                    console.log('the orders ' + orders_populated);
+                    console.log('the ordersa ' + orders_populated);
                     res.render('tab_template.html', {csrf: JSON.stringify(req.session._csrf), data: JSON.stringify(data), orders_populated: JSON.stringify(orders_populated)});
 
 
