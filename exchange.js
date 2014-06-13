@@ -1133,8 +1133,15 @@ bid_quantity = parseFloat(quantity);
 // maintenance_margin = bid_price * bid_quantity;
 // maintenance_margin_multiplier = 1
 //console.log("maintenance margin " + maintenance_margin);
+
+short_symbol = req.body.short_symbol;
+
+ContractRef.findOne({short_symbol: short_symbol}, function(err, contractref){
 bitstamp.ticker(function(err, trades) {
 current_price = trades.last;
+strike_price = contractref.strike_price;
+
+if (current_price < strike_price)
 maintenance_margin = .4 * (bid_quantity * 10 / current_price);
 
 
@@ -1527,6 +1534,8 @@ if (!complete ){
 
   console.log(trades.last);  
 });
+});
+
 
 }
 
@@ -1555,11 +1564,24 @@ ask_price = parseFloat(price);
 ask_quantity = parseFloat(quantity);
 // maintenance_margin = parseFloat(req.body.maintenance_margin);
 // maintenance_margin = ask_price * ask_quantity;
-
+ContractRef.findOne({short_symbol: short_symbol}, function(err, contractref){
 bitstamp.ticker(function(err, trades) {
- maintenance_margin_multiplier = .4
+maintenance_margin_multiplier = .4
 current_price = trades.last;
+
+strike_price = contractref.strike_price;
+
+if (current_price < strike_price)
 maintenance_margin = .4 * (ask_quantity * 10 / current_price);
+else{
+in_the_money = 10/ (current_price - strike_price) * ask_quantity;
+fourty_percent_change = .4 * (ask_quantity * 10 / current_price);
+maintenance_margin = in_the_money + fourty_percent_change;
+
+
+}
+
+
 
 console.log("maintenance margin " + maintenance_margin);
 
@@ -1926,6 +1948,8 @@ if (!complete ){
 });
 
 });
+});
+
 
 }
 
@@ -2846,6 +2870,20 @@ console.log("coin saved");
 
 
 });
+
+process.on('uncaughtException', function (e) {
+  console.log(new Date().toString(), e.stack || e);
+  process.exit(1);
+});
+
+var log = console.log;
+
+console.log = function(){
+date = new Date();
+
+  log.apply(console, [date.toString() + ' ' + date.getTime() ].concat(arguments));
+};
+
 
 
 app.post('/get_address', function(req,res){

@@ -72,7 +72,7 @@ string += '</tbody></table>\
     <table class="table table-bordered live_trades"  style="margin-bottom:50px">\
         <thead >\
           <tr>\
-            <th style="border-right: 1px solid #eee">Bids</th>\
+            <th style="border-right: 1px solid #eee" >Most Recent Bids</th>\
             <th style="border-right: 1px solid #eee"></th>\
             <th></th>\
           </tr>\
@@ -98,7 +98,7 @@ string += '</tbody></table></div>\
     <table class="table table-bordered live_trades"  style="margin-bottom:50px">\
         <thead >\
           <tr>\
-            <th style="border-right: 1px solid #eee">Asks</th>\
+            <th style="border-right: 1px solid #eee">Most Recent Asks</th>\
             <th style="border-right: 1px solid #eee"></th>\
             <th></th>\
           </tr>\
@@ -2092,7 +2092,15 @@ $('.inner_content').append(string);
       current_price = current_price.substr(1, current_price.length);
       current_price = parseFloat(current_price);
 
+      strike_price = contract.strike_price;
+      if (current_price < strike_price)
       sell_margin = margin * (ask_quantity * 10 / current_price);
+      else{
+      in_the_money = 10/ (current_price - strike_price) * ask_quantity;
+      fourty_percent_change = .4 * (ask_quantity * 10 / current_price);
+      sell_margin = in_the_money + fourty_percent_change;
+
+      }
 
       $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
       $('#sell_fee').html( (0).toPrecision(9));
@@ -2136,6 +2144,22 @@ $('.inner_content').append(string);
       sell_margin = $('#sell_margin').html();
       sell_margin = sell_margin.substr(1, sell_margin.length);
       sell_margin = parseFloat(sell_margin);
+
+
+      current_price = $('.current_btc_price').html();
+      current_price = current_price.substr(1, current_price.length);
+      current_price = parseFloat(current_price);
+      //alert(current_price);
+
+      strike_price = contract.strike_price;
+      if (current_price < strike_price)
+      sell_margin = margin * (ask_quantity * 10 / current_price);
+      else{
+      in_the_money = 10/ (current_price - strike_price) * ask_quantity;
+      fourty_percent_change = .4 * (ask_quantity * 10 / current_price);
+      sell_margin = in_the_money + fourty_percent_change;
+
+      }
 
 
       //alert('test');

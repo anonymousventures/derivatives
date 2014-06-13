@@ -71,7 +71,7 @@ margin-right: 30px;
   margin-top: 70px;
   margin-left: 30px;
   margin-right: 30px;
-
+  padding-left: 50px;
 }
 
 #top_area{
@@ -537,6 +537,7 @@ text-transform: uppercase;
 
 #nav_pills{
   float: left;
+  padding-left: 20px;
 }
 
 .tab_add{
