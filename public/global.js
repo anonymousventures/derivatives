@@ -1657,7 +1657,7 @@ substring = '<tr id="tab_row">\
         <td class="tab_td_order">' + '.015' + '</td>\
         <td class="tab_td_order">' + (parseFloat(processed ) * parseFloat(val.price) * 1.015).toPrecision(5)  + '</td>\
         <td class="tab_td_order">' + val.net_variation.toPrecision(5) + '</td>\
-        <td class="tab_td_order"><a class="exercise_option" href="#" order_id="' + val._id + '">        <img src="http://localhost:8080/img/check.png" alt="Exercise" class="2x" width="16" style="margin-left: 20px"><br>  Exercise </a></td>\
+        <td class="tab_td_order"><a class="exercise_option" href="#" order_id="' + val._id + '">        <img src="' + prefix + 'img/check.png" alt="Exercise" class="2x" width="16" style="margin-left: 20px"><br>  Exercise </a></td>\
 </tr>';
 string += substring;
 
