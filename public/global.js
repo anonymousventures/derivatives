@@ -3,7 +3,7 @@ $( document ).ready(function() {
 if (document.URL.indexOf('localhost') != -1 )
   prefix = 'http://localhost:8080/';
 else
-  prefix = 'http://ec2-54-186-16-187.us-west-2.compute.amazonaws.com/';
+  prefix = 'http://genesisblock.io/';
 
 
 if (document.URL.indexOf('contract') != -1 || document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('trading') != -1 ||  document.URL.indexOf('voting') != -1 || document.URL.indexOf('fees') != -1 || document.URL.indexOf('about') != -1 || document.URL.indexOf('support') != -1 || document.URL == prefix){
