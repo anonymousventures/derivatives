@@ -139,6 +139,7 @@ var User = new mongoose.Schema({
     pending_withdrawals: { type: Number, default: 0},
     current_margin: { type: Number, default: 0},
     maintenance_margin: { type: Number, default: 0},
+    required_margin:  { type: Number, default: 0},
     in_positions: { type: Number, default: 0},
     in_orders: { type: Number, default: 0},
     in_orders_non_margin: { type: Number, default: 0},
@@ -635,7 +636,6 @@ last_price = val.btc_prices[last_index];
 
 console.log("current priceb " + current_price);
 //current_price = 800;
-
 
 
 variation = (current_price - last_price ) / last_price * 10 / last_price * in_positions; 
@@ -1150,9 +1150,9 @@ bitstamp.ticker(function(err, trades) {
 current_price = trades.last;
 strike_price = contractref.strike_price;
 
-if (current_price < strike_price)
+//if (current_price < strike_price)
 maintenance_margin = .4 * (bid_quantity * 10 / current_price);
-
+required_margin = .75 * maintenance_margin;
 
 short_symbol = req.body.short_symbol;
 
@@ -1205,7 +1205,7 @@ console.log(" down ");
 inc_available = -1 * (fees * bid_quantity + bid_value + maintenance_margin);
 console.log(inc_available);
 
-User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, maintenance_margin: maintenance_margin, in_orders: maintenance_margin, in_orders_non_margin: -1 * bid_value}},function(err, user){
+User.findOneAndUpdate({email: req.session.user.email}, {$inc: {balance: -1 * fees * bid_quantity, available_balance: inc_available, required_margin: required_margin, maintenance_margin: maintenance_margin, in_orders: maintenance_margin, in_orders_non_margin: -1 * bid_value}},function(err, user){
 
 order = new Order({
                 time: new Date().getTime(),
@@ -1313,7 +1313,7 @@ if (!complete ){
 
         //User.findById(val['seller']).populate(short_symbol).exec(function(err, seller){
         user[short_symbol].update({$inc: {balance: bid_quantity_left}}, { w: 1 }, callback);
-        user.update({$inc: {in_positions: partial_maintenance_margin, maintenance_margin: maintenance_margin, balance: -1 * (purchase_cost + fee_total) , available_balance: -1 * ( purchase_cost + fee_total)}}, { w: 1 }, callback);
+        user.update({$inc: {in_positions: partial_maintenance_margin, required_margin: required_margin, maintenance_margin: maintenance_margin, balance: -1 * (purchase_cost + fee_total) , available_balance: -1 * ( purchase_cost + fee_total + maintenance_margin)}}, { w: 1 }, callback);
 
 
         function callback(){}
@@ -1453,7 +1453,7 @@ if (!complete ){
 
             in_orders_non_margin = -1 * bid_quantity_left * bid_price;
             in_orders = maintenance_margin_multiplier * (bid_quantity_left * 10 / current_price);
-            user.update({$inc: {in_orders_non_margin: in_orders_non_margin, in_orders: in_orders}}, { w: 1 }, callback);
+            user.update({$inc: {maintenance_margin: maintenance_margin, required_margin: required_margin, in_orders_non_margin: in_orders_non_margin, in_orders: in_orders, available_balance: -1 * maintenance_margin}}, { w: 1 }, callback);
 
             order = new Order({
                     time: time,
@@ -1559,6 +1559,8 @@ app.post('/ask',  csrf, function(req,res){
 //req.session.processing = false;
 console.log('overhere' + req.session._csrf);
 console.log(req.session.processing_sell);
+    //req.session.processing_sell = false;
+
 
 if (req.session.processing_sell == undefined)
     req.session.processing_sell = false;
@@ -1571,6 +1573,7 @@ quantity = req.body.ask_quantity;
 price = req.body.ask_price;
 ask_price = parseFloat(price);
 ask_quantity = parseFloat(quantity);
+short_symbol = req.body.short_symbol;
 // maintenance_margin = parseFloat(req.body.maintenance_margin);
 // maintenance_margin = ask_price * ask_quantity;
 ContractRef.findOne({short_symbol: short_symbol}, function(err, contractref){
@@ -1643,6 +1646,9 @@ user[short_symbol].update({$inc: {balance: -1 * ask_quantity}}, { w: 1 }, callba
 
 User.findOneAndUpdate({email: req.session.user.email}, {$inc: {in_orders_non_margin: ask_value, in_orders: maintenance_margin, balance: -1 * fees * ask_quantity, available_balance: -1 * (fees * ask_quantity + maintenance_margin), maintenance_margin: maintenance_margin}},function(err, user){
 
+console.log('fucking quantity ' + quantity);
+
+
 order = new Order({
                 time: new Date().getTime(),
                 option_type: 'call',
@@ -1665,6 +1671,8 @@ user.save(function(err){
 
 });
 
+
+console.log('the order ' + order);
 
 order.save(function(err){
 

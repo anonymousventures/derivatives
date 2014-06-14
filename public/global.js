@@ -2223,7 +2223,8 @@ $('.inner_content').append(string);
       ask_quantity = $('#ask_quantity').val();
       ask_price = $('#ask_price').val();
       sell_margin = parseFloat($('#sell_margin').html());
-
+      //alert(ask_quantity);
+      //alert(ask_price);
       //alert(buy_amount);
 
       $.ajax({
@@ -2259,8 +2260,7 @@ $('.inner_content').append(string);
   if (document.URL.indexOf('balances') != -1){
     
     $('#balances_li').attr('class', 'active');
-
-
+    
 
 a_string ='<div class="table-responsive"><table class="table table-bordered">\
         <thead>\
@@ -2270,7 +2270,8 @@ a_string ='<div class="table-responsive"><table class="table table-bordered">\
             <th>MARGIN  <br> (in positions)</th>\
             <th>MARGIN  <br> (in orders)</th>\
             <th>NET IN ORDERS * </th>\
-            <th>REQUIRED<br>MARGIN</th>\
+            <th>Required<br>Margin</th>\
+            <th>Total Maintenance<br>Margin</th>\
             <th>AVAILABLE</th>\
             <th>PENDING <br>DEPOSITS</th>\
             <th>PENDING <br>WITHDRAWALS</th>\
@@ -2283,6 +2284,7 @@ a_string ='<div class="table-responsive"><table class="table table-bordered">\
             <td>'+ data.in_positions.toPrecision(6)  + '</td>\
             <td>'+ data.in_orders.toPrecision(6)  + '</td>\
             <td>'+ data.in_orders_non_margin.toPrecision(6)  + '</td>\
+            <td>'+ data.required_margin.toPrecision(6)  + '</td>\
             <td>'+ data.maintenance_margin.toPrecision(6)  + '</td>\
             <td>'+ data.available_balance.toPrecision(6)  + '</td>\
             <td>'+ data.pending_deposits.toPrecision(6)  + '</td>\
