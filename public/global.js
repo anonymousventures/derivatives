@@ -1860,7 +1860,7 @@ $('#right_bar').append(string);
     }
 
 
-
+console.log(pending_asks[0].price);
 
     string = '<div id="top_header">\
     <div id="left_header">\
@@ -1905,16 +1905,16 @@ $('#right_bar').append(string);
         <div id="error_message"></div>\
     <div class="success box">Your available BTC balance is <strong><a href="asdf" class="exchange_balance">' + available_balance + '</a></strong>.</div>\
     <div class="box options">\
-                <span class="label_style">Amount:</span> <input type="number" id="bid_quantity" name="amount" value="' + new Number(0).toPrecision(9) + '" class="required"> ' + contract.short_symbol + '<br>\
-                <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="bid_price" name="price" value="' + pending_asks[0].price.toPrecision(9) + '" class="required"> BTC<br>\
+                <span class="label_style">Amount:</span> <input type="number" id="bid_quantity" name="amount" value="' + new Number(0).toFixed(9) + '" class="required"> ' + contract.short_symbol + '<br>\
+                <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="bid_price" name="price" value="' + (pending_asks[0].price + .000000001).toFixed(9) + '" class="required"> BTC<br>\
                 <span class="label_style">Current Bitcoin Price:</span> <span type="number" class="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
                 <span class="label_style">Strike Price:</span> <span type="number" id="strike_price">' + '$' + contract.strike_price + '</span> <br>\
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
-                <span class="label_style">Margin Requirement:</span> <span type="number" class="margin" id="buy_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
-                <span class="label_style">Total:</span> <span class="total" id="buy_total">' + pending_asks[0].price.toPrecision(9) + '</span> <br>\
-                <span class="label_style">Trading Fee:</span> <span class="fee" id="buy_fee">0.00000000</span> BTC (' + (0).toPrecision(2) +  '%)<br>\
-                <span class="label_style">Net Total:</span> <span class="netTotalBuy" >' + pending_asks[0].price.toPrecision(9) + '</span> BTC\
-                          <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_asks[0].price.toPrecision(9) + '" class="required">\
+                <span class="label_style">Margin Requirement:</span> <span type="number" class="margin" id="buy_margin">' + new Number(0).toFixed(9) + '</span> <br>\
+                <span class="label_style">Total:</span> <span class="total" id="buy_total">' + pending_asks[0].price.toFixed(9) + '</span> <br>\
+                <span class="label_style">Trading Fee:</span> <span class="fee" id="buy_fee">0.00000000</span> BTC (' + (0).toFixed(2) +  '%)<br>\
+                <span class="label_style">Net Total:</span> <span class="netTotalBuy" >' + pending_asks[0].price.toFixed(9) + '</span> BTC\
+                          <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_asks[0].price.toFixed(9) + '" class="required">\
     </div>\
     <button type="button" class="btn btn-primary" id="buy_order">Submit Buy Order</button>\
     <h3>Sell Orders </h3>\
@@ -1931,9 +1931,9 @@ $('#right_bar').append(string);
 
     $.each(pending_asks, function(key,val){
     substring = '<tr price="0.00000103">\
-    <td >' + val.price.toPrecision(9) + '</td>\
-    <td >' + val.quantity_left.toPrecision(9) + '</td>\
-    <td >' + (val.price * val.quantity_left).toPrecision(9) + '</td></tr>';
+    <td >' + (val.price + .000000001).toFixed(9)+ '</td>\
+    <td >' + val.quantity_left.toFixed(9)  + '</td>\
+    <td >' + (val.price * val.quantity_left).toFixed(9)  + '</td></tr>';
     string += substring;
     });
 
@@ -1951,15 +1951,15 @@ $('#right_bar').append(string);
 <div class="fail box">Your available BTC balance is <strong><a href="asdf" class="exchange_balance">' + available_balance + '</a></strong>.</div>\
     <div class="box options">\
                 <span class="label_style">Amount:</span> <input type="number" id="ask_quantity" name="amount" value="0.00000000" class="required"> ' + contract.short_symbol + '<br>\
-                <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="ask_price" name="price" value="' + pending_bids[0].price.toPrecision(9) + '" class="required"> BTC<br>\
+                <span class="label_style">Price Per ' + contract.short_symbol + ':</span> <input type="number" id="ask_price" name="price" value="' + pending_bids[0].price.toFixed(9) + '" class="required"> BTC<br>\
                 <span class="label_style">Current Bitcoin Price:</span> <span type="number" class="current_btc_price">' + '$' + last_bitstamp + '</span> <br>\
                 <span class="label_style">Strike Price:</span> <span type="number" id="strike_price">' + '$' + contract.strike_price + '</span> <br>\
                 <span class="label_style">Expiration time:</span> <span type="number" id="expiration">' + expiration_time+ '</span> <br>\
-                <span class="label_style">Margin Requirement:</span> <span type="number"  class="margin" id="sell_margin">' + new Number(0).toPrecision(9) + '</span> <br>\
-                <span class="label_style">Total:</span> <span class="total" id="sell_total">' + pending_bids[0].price.toPrecision(9) + '</span> <br>\
-                <span class="label_style">Trading Fee:</span> <span class="fee" id="sell_fee">0.00000000</span> BTC (' + (0).toPrecision(2) +  '%)<br>\
-                <span class="label_style">Net Total:</span> <span class="netTotalSell" >' + pending_bids[0].price.toPrecision(9) + '</span> BTC\
-                          <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_bids[0].price.toPrecision(9) + '" class="required">\
+                <span class="label_style">Margin Requirement:</span> <span type="number"  class="margin" id="sell_margin">' + new Number(0).toFixed(9)  + '</span> <br>\
+                <span class="label_style">Total:</span> <span class="total" id="sell_total">' + pending_bids[0].price.toFixed(9) + '</span> <br>\
+                <span class="label_style">Trading Fee:</span> <span class="fee" id="sell_fee">0.00000000</span> BTC (' + (0).toFixed(2) +  '%)<br>\
+                <span class="label_style">Net Total:</span> <span class="netTotalSell" >' + pending_bids[0].price.toFixed(9)  + '</span> BTC\
+                          <input type="hidden" name="buyNetTotal" id="buy_net_total" value="' + pending_bids[0].price.toFixed(9)  + '" class="required">\
               </div>\
     <button type="button" class="btn btn-primary" id="ask_submit">Submit Sell Order</button>\
     <h3>Buy Orders </h3>\
@@ -1974,9 +1974,9 @@ $('#right_bar').append(string);
 
     $.each(pending_bids, function(key,val){
     substring = '<tr price="0.00000103">\
-    <td >' + val.price.toPrecision(9) + '</td>\
-    <td >' + val.quantity_left.toPrecision(9) + '</td>\
-    <td >' + (val.price * val.quantity_left).toPrecision(9) + '</td></tr>';
+    <td >' + val.price.toFixed(9)  + '</td>\
+    <td >' + val.quantity_left.toFixed(9)  + '</td>\
+    <td >' + (val.price * val.quantity_left).toFixed(9)  + '</td></tr>';
     string += substring;
     });
 
@@ -2006,10 +2006,10 @@ $('.inner_content').append(string);
 
       buy_margin = margin * (bid_quantity * 10 / current_price);
 
-      $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (0).toPrecision(9));
-      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toPrecision(9));
-      $('#buy_margin').html(buy_margin.toPrecision(9));
+      $('#buy_total').html( (bid_quantity * bid_price).toFixed(9) );
+      $('#buy_fee').html( (0).toFixed(9) );
+      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toFixed(9) );
+      $('#buy_margin').html(buy_margin.toFixed(9) );
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -2047,9 +2047,9 @@ $('.inner_content').append(string);
       buy_margin = buy_margin.substr(1, buy_margin.length);
       buy_margin = parseFloat(buy_margin);
 
-      $('#buy_total').html( (bid_quantity * bid_price).toPrecision(9));
-      $('#buy_fee').html( (0).toPrecision(9));
-      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toPrecision(9));
+      $('#buy_total').html( (bid_quantity * bid_price).toFixed(9) );
+      $('#buy_fee').html( (0).toFixed(9) );
+      $('.netTotalBuy').html( (bid_quantity * bid_price * 1).toFixed(9) );
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -2102,10 +2102,10 @@ $('.inner_content').append(string);
 
       }
 
-      $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (0).toPrecision(9));
-      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toPrecision(9));
-      $('#sell_margin').html(sell_margin.toPrecision(9));
+      $('#sell_total').html( (ask_quantity * ask_price).toFixed(9) );
+      $('#sell_fee').html( (0).toFixed(9) );
+      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toFixed(9) );
+      $('#sell_margin').html(sell_margin.toFixed(9) );
 
       //alert('test');
       //alert($('#withdraw_amount').val());
@@ -2138,9 +2138,9 @@ $('.inner_content').append(string);
       ask_price = $('#ask_price').val();
       //margin calculation tbd
 
-      $('#sell_total').html( (ask_quantity * ask_price).toPrecision(9));
-      $('#sell_fee').html( (0).toPrecision(9));
-      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toPrecision(9));
+      $('#sell_total').html( (ask_quantity * ask_price).toFixed(9) );
+      $('#sell_fee').html( (0).toFixed(9) );
+      $('.netTotalSell').html( (ask_quantity * ask_price * 1).toFixed(9) );
       sell_margin = $('#sell_margin').html();
       sell_margin = sell_margin.substr(1, sell_margin.length);
       sell_margin = parseFloat(sell_margin);
@@ -2211,7 +2211,7 @@ $('.inner_content').append(string);
         dataType: "html"
       }).done(function(data){
 
-        alert(data);
+        alert('Order submitted!');
 
       });
 
@@ -2233,7 +2233,7 @@ $('.inner_content').append(string);
         dataType: "html"
       }).done(function(data){
 
-        alert(data);
+        alert('Order submitted!');
 
       });
 

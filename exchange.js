@@ -1675,7 +1675,7 @@ console.log('order saved');
 
 
 req.session.processing_sell = false;
-res.end(JSON.stringify('done'));
+res.end('done');
 
 //console.log(req.session.processing);
 
