@@ -286,6 +286,10 @@ var Order = new mongoose.Schema({
     net_variation:  { type: Number, default: 0},
     buyer:  { type: mongoose.Schema.ObjectId, ref: 'User' },
     seller: { type: mongoose.Schema.ObjectId, ref: 'User' },
+    buyers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    sellers: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
+    buyer_quantities: [Number],
+    seller_quantities: [Number],
     opposing_orders: [{ type: mongoose.Schema.ObjectId, ref: 'Order' }]
 });
 
@@ -670,7 +674,6 @@ val.buyer.update({$inc: {balance: variation, available_balance: variation}}, { w
 Order.findByIdAndUpdate(val._id, {$push: {variation_margin: variation_margin}, $inc: {net_variation: variation}}, function(err,order){
 
     //console.log(order);
-
 });
 //val.variation_margin.push(variation_margin);
 
@@ -1121,7 +1124,6 @@ res.end(JSON.stringify('done'));
 
 
 
-
 app.post('/buy_order',  csrf, function(req,res){
 //req.session.processing = false;
 console.log('overhere' + req.session._csrf);
@@ -1330,7 +1332,7 @@ if (!complete ){
                         quantity_original: bid_quantity,
                         quantity: bid_quantity,
                         quantity_left: 0,
-                        seller: seller,
+                        seller: val.seller,
                         buyer: user,
                         pending: 'complete',
                         initial_margin: maintenance_margin
@@ -1344,8 +1346,12 @@ if (!complete ){
         order.opposing_orders.push(valb);
         });
 
+        console.log('daseller ' + seller);
+
         console.log('test 1 ' + order);
         order.btc_prices.push(current_price);
+
+
 
         order_data = new OrderData({
                             time: time,
@@ -1364,6 +1370,16 @@ if (!complete ){
         user.save(function(err){
 
         });
+
+
+
+        
+        for (var i=0; i< key; i++){
+        order.sellers.push(ask[i]['seller']);
+        order.seller_quantities.push(ask[i]['quantity_left']);
+        }
+        order.sellers.push(val['seller']);
+        order.seller_quantities.push(bid_quantity_left);
 
 
         order.save(function(err){
@@ -1464,6 +1480,7 @@ if (!complete ){
                     quantity: bid_quantity,
                     quantity_left: bid_quantity_left,
                     buyer: user,
+                    //seller: seller,
                     pending: 'pending',
                     initial_margin: maintenance_margin
             });
@@ -1477,6 +1494,7 @@ if (!complete ){
 
             console.log('test 2 ' + order);
             order.btc_prices.push(current_price);
+
             user.orders.push(order);
 
 
@@ -1745,6 +1763,7 @@ if (!complete ){
 
         //create buy order record and update balance
         User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function(err, user){
+        User.findById(val['buyer']).populate(short_symbol).exec(function(err, buyer){
 
         //buy_quantity_left = buy_value_left / buy_price;
 
@@ -1762,6 +1781,8 @@ if (!complete ){
         function callback(){}
         //done updating buyer balance
 
+
+
         time = new Date().getTime();
         order = new Order({
                         time: time,
@@ -1773,11 +1794,14 @@ if (!complete ){
                         quantity: ask_quantity,
                         quantity_left: 0,
                         seller: user,
+                        //buyer: buyer,
                         pending: 'complete',
                         initial_margin: maintenance_margin
         });
 
         order.btc_prices.push(current_price);
+        order.buyers.push(buyer);
+        order.buyer_quantities.push(ask_quantity_left);
 
         order_data = new OrderData({
                             time: time,
@@ -1805,6 +1829,7 @@ if (!complete ){
 
         });
 
+        });
         });
 
         //update balance on buyer
@@ -1852,6 +1877,7 @@ if (!complete ){
 
         //create buy order record and update balance
         User.findOne({email: req.session.user.email}).populate(short_symbol).exec(function(err, user){
+        User.findById(val['buyer']).populate(short_symbol).exec(function(err, buyer){
 
         function callback(){}
 
@@ -1895,11 +1921,14 @@ if (!complete ){
                     quantity: ask_quantity,
                     quantity_left: ask_quantity_left,
                     seller: user,
+                    //buyer: buyer,
                     pending: 'pending',
                     initial_margin: maintenance_margin
             });
 
             order.btc_prices.push(current_price);
+            order.buyers.push(buyer);
+            order.buyer_quantities.push(ask_quantity_left);
 
             user.orders.push(order);
 
@@ -1919,6 +1948,7 @@ if (!complete ){
         }
 
 
+        });
 
         });
 
